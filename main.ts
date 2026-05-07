@@ -15,6 +15,11 @@ type Enemy = {
   attack: number;
 };
 
+type DanceResponse = {
+  message: string;
+  gold: number;
+};
+
 const player: Player = {
   name: "Hero",
   hp: 20,
@@ -22,6 +27,39 @@ const player: Player = {
   attack: 5,
   gold: 0
 };
+
+const danceResponses: DanceResponse[] = [
+  { message: "The goblin claps politely.", gold: 0 },
+  { message: "The goblin starts dancing with you.", gold: 0 },
+  { message: "The goblin looks confused but supportive.", gold: 0 },
+  { message: "The goblin throws a gold coin at your feet.", gold: 1 },
+  { message: "The goblin boos loudly.", gold: 0 },
+  { message: "The goblin nods to the beat.", gold: 0 },
+  { message: "The goblin crosses their arms and watches silently.", gold: 0 },
+  { message: "The goblin looks genuinely impressed.", gold: 0 },
+  { message: "The goblin laughs so hard they snort.", gold: 0 },
+  { message: "The goblin attempts a cartwheel and fails.", gold: 0 },
+  { message: "The goblin chants your name.", gold: 0 },
+  { message: "The goblin looks emotionally moved.", gold: 0 },
+  { message: "The goblin refuses to acknowledge your performance.", gold: 0 },
+  { message: "The goblin starts stomping rhythmically.", gold: 0 },
+  { message: "The goblin gives you a thumbs up.", gold: 0 },
+  { message: "The goblin looks terrified by your moves.", gold: 0 },
+  { message: "The goblin throws glitter into the air.", gold: 0 },
+  { message: "The goblin starts shadow dancing.", gold: 0 },
+  { message: "The goblin spins in a circle.", gold: 0 },
+  { message: "The goblin looks disappointed in you personally.", gold: 0 },
+  { message: "The goblin starts beatboxing poorly.", gold: 0 },
+  { message: "The goblin throws a tomato at you.", gold: 0 },
+  { message: "The goblin pretends to be a dance judge.", gold: 0 },
+  { message: "The goblin wipes away a tear.", gold: 0 },
+  { message: "The goblin starts headbanging.", gold: 0 },
+  { message: "The goblin throws you a gold coin.", gold: 1 },
+  { message: "The goblin tries to copy your moves.", gold: 0 },
+  { message: "The goblin looks spiritually awakened.", gold: 0 },
+  { message: "The goblin screams for an encore.", gold: 0 },
+  { message: "The goblin rates your performance a 7/10.", gold: 0 }
+];
 
 function makeGoblin(): Enemy {
   return {
@@ -33,6 +71,10 @@ function makeGoblin(): Enemy {
 
 function randomDamage(max: number): number {
   return Math.floor(Math.random() * max) + 1;
+}
+
+function randomDanceResponse(): DanceResponse {
+  return danceResponses[Math.floor(Math.random() * danceResponses.length)];
 }
 
 async function runGame(): Promise<void> {
@@ -71,6 +113,7 @@ async function runGame(): Promise<void> {
       console.log("--------------------------------");
       console.log(`Player HP : ${player.hp}/${player.maxHp}`);
       console.log(`Goblin HP : ${goblin.hp}`);
+      console.log(`Gold      : ${player.gold}`);
 
       console.log("\nWhat do you want to do?");
       console.log("1. Attack");
@@ -79,6 +122,9 @@ async function runGame(): Promise<void> {
       console.log("4. Run\n");
 
       const action = (await rl.question("> ")).trim();
+
+      console.log("\n════════════════════");
+      
       const normalizedAction = action.toLowerCase();
 
       if (normalizedAction === "q" || normalizedAction === "exit") {
@@ -95,27 +141,19 @@ async function runGame(): Promise<void> {
         console.log(`You heal for ${heal} HP.`);
         console.log(`Player HP: ${player.hp}/${player.maxHp}`);
       } else if (action === "3") {
-        const danceRoll = randomDamage(4);
+        const danceResponse = randomDanceResponse();
 
         console.log("\n🕺 DANCE");
-
-        if (danceRoll === 1) {
-          console.log("You dance. The goblin laughs so hard it snorts.");
-        } else if (danceRoll === 2) {
-          console.log("You dance. The goblin starts dancing with you.");
-        } else if (danceRoll === 3) {
-          const coins = randomDamage(5);
-
-          player.gold += coins;
-
-          console.log(`You dance. The goblin tips you ${coins} gold.`);
-          console.log(`Gold: ${player.gold} (no gameplay effect yet)`);
-        } else {
-          console.log("You dance. The goblin crosses its arms and glares at you.");
-        }
+        console.log("You start dancing.");
 
         console.log("\n👹 GOBLIN TURN");
-        console.log("The goblin is too distracted to attack.");
+        console.log(danceResponse.message);
+
+        if (danceResponse.gold > 0) {
+          player.gold += danceResponse.gold;
+
+          console.log(`Gold +${danceResponse.gold}`);
+        }
 
         turn += 1;
         continue;
