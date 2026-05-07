@@ -29,7 +29,10 @@ function randomDamage(max: number): number {
 console.log("Player:", player);
 console.log("Enemy:", goblin);
 
+let turn = 1;
+
 while (player.hp > 0 && goblin.hp > 0) {
+  console.log(`Turn ${turn}`);
   const playerHit = randomDamage(player.attack);
   goblin.hp = Math.max(0, goblin.hp - playerHit);
   console.log(`You hit the goblin for ${playerHit} damage.`);
@@ -44,6 +47,7 @@ while (player.hp > 0 && goblin.hp > 0) {
   console.log(`Goblin hits you for ${goblinHit} damage.`);
   console.log(`Player HP: ${player.hp}`);
   console.log("---");
+  turn += 1;
 }
 
 if (goblin.hp <= 0) {
