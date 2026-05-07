@@ -27,7 +27,9 @@ function randomDamage(max: number): number {
 }
 
 const sampleHit = randomDamage(player.attack);
+goblin.hp = goblin.hp - sampleHit;
 
 console.log("Player:", player);
 console.log("Enemy:", goblin);
 console.log(`You hit the goblin for ${sampleHit} damage.`);
+console.log(`Goblin HP: ${goblin.hp}`);
