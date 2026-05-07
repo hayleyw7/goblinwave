@@ -40,21 +40,43 @@ async function runGame(): Promise<void> {
   let turn = 1;
   let wave = 1;
 
-  console.log("Player:", player);
+  console.log(`
+ ██████╗  ██████╗ ██████╗ ██╗     ██╗███╗   ██╗██╗    ██╗ █████╗ ██╗   ██╗███████╗
+██╔════╝ ██╔═══██╗██╔══██╗██║     ██║████╗  ██║██║    ██║██╔══██╗██║   ██║██╔════╝
+██║  ███╗██║   ██║██████╔╝██║     ██║██╔██╗ ██║██║ █╗ ██║███████║██║   ██║█████╗
+██║   ██║██║   ██║██╔══██╗██║     ██║██║╚██╗██║██║███╗██║██╔══██║╚██╗ ██╔╝██╔══╝
+╚██████╔╝╚██████╔╝██████╔╝███████╗██║██║ ╚████║╚███╔███╔╝██║  ██║ ╚████╔╝ ███████╗
+ ╚═════╝  ╚═════╝ ╚═════╝ ╚══════╝╚═╝╚═╝  ╚═══╝ ╚══╝╚══╝ ╚═╝  ╚═╝  ╚═══╝  ╚══════╝
+`);
+
+  console.log("Survive as many goblin waves as you can.");
+  console.log("Type Q or EXIT at any time to quit.");
+  console.log("\nPlayer:", player);
 
   while (player.hp > 0) {
     const goblin = makeGoblin();
     let escaped = false;
 
-    console.log(`\nWave ${wave}: A ${goblin.name} appears!`);
+    console.log(`
+╔════════════════════╗
+║       WAVE ${wave}       ║
+╚════════════════════╝
+`);
+
+    console.log(`A ${goblin.name} appears!`);
 
     while (player.hp > 0 && goblin.hp > 0) {
-      console.log(`\nTurn ${turn}`);
+      console.log("\n--------------------------------");
+      console.log(`TURN ${turn}`);
+      console.log("--------------------------------");
+      console.log(`Player HP : ${player.hp}/${player.maxHp}`);
+      console.log(`Goblin HP : ${goblin.hp}`);
+
+      console.log("\nWhat do you want to do?");
       console.log("1. Attack");
       console.log("2. Heal");
       console.log("3. Dance");
-      console.log("4. Run");
-      console.log("Q. Quit");
+      console.log("4. Run\n");
 
       const action = (await rl.question("> ")).trim();
       const normalizedAction = action.toLowerCase();
@@ -69,9 +91,13 @@ async function runGame(): Promise<void> {
         const heal = 3;
         player.hp = Math.min(player.maxHp, player.hp + heal);
 
-        console.log(`You heal for ${heal}. Player HP: ${player.hp}`);
+        console.log("\n💚 HEAL");
+        console.log(`You heal for ${heal} HP.`);
+        console.log(`Player HP: ${player.hp}/${player.maxHp}`);
       } else if (action === "3") {
         const danceRoll = randomDamage(4);
+
+        console.log("\n🕺 DANCE");
 
         if (danceRoll === 1) {
           console.log("You dance. The goblin laughs so hard it snorts.");
@@ -88,11 +114,15 @@ async function runGame(): Promise<void> {
           console.log("You dance. The goblin crosses its arms and glares at you.");
         }
 
+        console.log("\n👹 GOBLIN TURN");
+        console.log("The goblin is too distracted to attack.");
+
         turn += 1;
         continue;
       } else if (action === "4") {
         escaped = true;
 
+        console.log("\n🏃 RUN");
         console.log("You run away to the next wave!");
         break;
       } else if (action === "1") {
@@ -100,6 +130,7 @@ async function runGame(): Promise<void> {
 
         goblin.hp = Math.max(0, goblin.hp - playerHit);
 
+        console.log("\n⚔️  ATTACK");
         console.log(`You hit the goblin for ${playerHit} damage.`);
         console.log(`Goblin HP: ${goblin.hp}`);
       } else {
@@ -115,6 +146,7 @@ async function runGame(): Promise<void> {
 
       player.hp = Math.max(0, player.hp - goblinHit);
 
+      console.log("\n👹 GOBLIN TURN");
       console.log(`Goblin hits you for ${goblinHit} damage.`);
       console.log(`Player HP: ${player.hp}`);
 
@@ -130,12 +162,12 @@ async function runGame(): Promise<void> {
       continue;
     }
 
-    console.log("You win this wave!");
+    console.log("\nYou win this wave!");
 
     wave += 1;
   }
 
-  console.log("You lose! Game over.");
+  console.log("\nYou lose! Game over.");
 
   rl.close();
 }
