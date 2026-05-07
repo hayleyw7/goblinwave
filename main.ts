@@ -6,6 +6,7 @@ type Player = {
   hp: number;
   maxHp: number;
   attack: number;
+  gold: number;
 };
 
 type Enemy = {
@@ -18,7 +19,8 @@ const player: Player = {
   name: "Hero",
   hp: 20,
   maxHp: 20,
-  attack: 5
+  attack: 5,
+  gold: 0
 };
 
 function makeGoblin(): Enemy {
@@ -49,7 +51,8 @@ async function runGame(): Promise<void> {
       console.log(`\nTurn ${turn}`);
       console.log("1. Attack");
       console.log("2. Heal");
-      console.log("3. Run");
+      console.log("3. Dance");
+      console.log("4. Run");
       const action = (await rl.question("> ")).trim();
 
       if (action === "2") {
@@ -57,6 +60,20 @@ async function runGame(): Promise<void> {
         player.hp = Math.min(player.maxHp, player.hp + heal);
         console.log(`You heal for ${heal}. Player HP: ${player.hp}`);
       } else if (action === "3") {
+        const danceRoll = randomDamage(4);
+        if (danceRoll === 1) {
+          console.log("You dance. The goblin laughs so hard it snorts.");
+        } else if (danceRoll === 2) {
+          console.log("You dance. The goblin starts dancing with you.");
+        } else if (danceRoll === 3) {
+          const coins = randomDamage(5);
+          player.gold += coins;
+          console.log(`You dance. The goblin tips you ${coins} gold.`);
+          console.log(`Gold: ${player.gold} (no gameplay effect yet)`);
+        } else {
+          console.log("You dance. The goblin crosses its arms and glares at you.");
+        }
+      } else if (action === "4") {
         escaped = true;
         console.log("You run away to the next wave!");
         break;
@@ -66,7 +83,7 @@ async function runGame(): Promise<void> {
         console.log(`You hit the goblin for ${playerHit} damage.`);
         console.log(`Goblin HP: ${goblin.hp}`);
       } else {
-        console.log("Choose 1, 2, or 3.");
+        console.log("Choose 1, 2, 3, or 4.");
         continue;
       }
 
