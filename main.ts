@@ -16,22 +16,28 @@ const player: Player = {
   attack: 5
 };
 
-const goblin: Enemy = {
-  name: "Goblin",
-  hp: 12,
-  attack: 3
-};
+function makeGoblin(): Enemy {
+  return {
+    name: "Goblin",
+    hp: 12,
+    attack: 3
+  };
+}
 
 function randomDamage(max: number): number {
   return Math.floor(Math.random() * max) + 1;
 }
 
-console.log("Player:", player);
-console.log("Enemy:", goblin);
-
 let turn = 1;
+let wave = 1;
 
-while (player.hp > 0 && goblin.hp > 0) {
+console.log("Player:", player);
+
+while (player.hp > 0) {
+  const goblin = makeGoblin();
+  console.log(`\nWave ${wave}: A ${goblin.name} appears!`);
+
+  while (player.hp > 0 && goblin.hp > 0) {
   console.log(`Turn ${turn}`);
   const playerHit = randomDamage(player.attack);
   goblin.hp = Math.max(0, goblin.hp - playerHit);
@@ -48,10 +54,14 @@ while (player.hp > 0 && goblin.hp > 0) {
   console.log(`Player HP: ${player.hp}`);
   console.log("---");
   turn += 1;
+  }
+
+  if (player.hp <= 0) {
+    break;
+  }
+
+  console.log("You win this wave!");
+  wave += 1;
 }
 
-if (goblin.hp <= 0) {
-  console.log("You win!");
-} else if (player.hp <= 0) {
-  console.log("You lose!");
-}
+console.log("You lose! Game over.");
