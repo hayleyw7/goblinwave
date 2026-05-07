@@ -92,7 +92,7 @@ async function runGame(): Promise<void> {
 `);
 
   console.log("Survive as many goblin waves as you can.");
-  console.log("Type Q or EXIT at any time to quit.");
+  console.log("Type Q at any time to quit.");
   console.log("\nPlayer:", player);
 
   while (player.hp > 0) {
@@ -172,7 +172,7 @@ async function runGame(): Promise<void> {
         console.log(`You hit the goblin for ${playerHit} damage.`);
         console.log(`Goblin HP: ${goblin.hp}`);
       } else {
-        console.log("Choose 1, 2, 3, 4, Q, or EXIT.");
+        console.log("Choose 1, 2, 3, 4, or Q.");
         continue;
       }
 
