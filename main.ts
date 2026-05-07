@@ -61,6 +61,7 @@ async function runGame(): Promise<void> {
         console.log(`You heal for ${heal}. Player HP: ${player.hp}`);
       } else if (action === "3") {
         const danceRoll = randomDamage(4);
+
         if (danceRoll === 1) {
           console.log("You dance. The goblin laughs so hard it snorts.");
         } else if (danceRoll === 2) {
@@ -73,6 +74,9 @@ async function runGame(): Promise<void> {
         } else {
           console.log("You dance. The goblin crosses its arms and glares at you.");
         }
+
+        turn += 1;
+        continue;
       } else if (action === "4") {
         escaped = true;
         console.log("You run away to the next wave!");
