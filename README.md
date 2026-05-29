@@ -13,8 +13,7 @@ Deploy or update hosting via [GitHub Pages](#github-pages) (Settings → Pages �
 - Turn-based combat in the browser — no install
 - **100 waves** to win; **117** hand-picked alliterative foes (critters and fantasy creatures)
 - **Levels 1–10** — classic RPG pacing: stay Lv 1 for waves 1–10, level up at **11, 21, 31…**; HP, ATK, and max heal grow with you
-- Foe **LV** varies around yours — easier critters fight below your level, tougher ones above
-- Early foes are **softened** on waves **1–10** (lower HP/ATK, all Lv 1)
+- Foe **LV** varies around yours — easier critters fight below your level, tougher ones above (same rules from wave 1)
 - Pick any roster emoji as your hero
 - **Heal** (1–3 HP, random) on your turn — foe may counterattack
 - **Dance** for random foe reactions — hype for you, hype for them, both, or neither (max **5 HYPE** each; +1 ATK per level)

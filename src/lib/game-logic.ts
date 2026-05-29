@@ -14,9 +14,6 @@ export const HEAL_MAX_PER_LEVEL = 1;
 
 export const FOE_HP_PER_LEVEL = 2;
 export const FOE_ATK_PER_LEVEL = 1;
-export const STARTER_WAVE_MAX = 10;
-export const STARTER_HP_MULTIPLIER = 0.82;
-export const STARTER_ATK_PENALTY = 1;
 export const FOE_LEVEL1_HP_MULTIPLIER = 0.72;
 
 export const DEFEAT_VERBS = [
@@ -164,10 +161,6 @@ export function xpPercentForWave(wave: number): number {
   return Math.round((current / max) * 100);
 }
 
-export function isStarterBand(wave: number): boolean {
-  return wave >= 1 && wave <= STARTER_WAVE_MAX;
-}
-
 /** Rough power score from roster base stats — used to nudge foe level up/down. */
 export function foeStatScore(template: FoeTemplate): number {
   return template.baseHp + template.baseAtk * 2;
@@ -186,9 +179,6 @@ export function foeDifficultyOffset(template: FoeTemplate): number {
 }
 
 export function foeLevelForTemplate(template: FoeTemplate, wave: number): number {
-  if (isStarterBand(wave)) {
-    return 1;
-  }
   return clampBattleLevel(playerLevelForWave(wave) + foeDifficultyOffset(template));
 }
 
@@ -212,38 +202,20 @@ export function scaleFoeAttack(baseAtk: number, foeLevel: number): number {
   return Math.max(1, atk);
 }
 
-export function applyStarterBandEase(
-  hp: number,
-  attack: number,
-  wave: number
-): { hp: number; attack: number } {
-  if (!isStarterBand(wave)) {
-    return { hp, attack };
-  }
-  return {
-    hp: Math.max(4, Math.round(hp * STARTER_HP_MULTIPLIER)),
-    attack: Math.max(1, attack - STARTER_ATK_PENALTY),
-  };
-}
-
 export function makeFoeFromTemplate(
   template: FoeTemplate,
   wave: number
 ): WaveFoe {
   const level = foeLevelForTemplate(template, wave);
-  const eased = applyStarterBandEase(
-    scaleFoeHp(template.baseHp, level),
-    scaleFoeAttack(template.baseAtk, level),
-    wave
-  );
-  const hp = eased.hp;
+  const hp = scaleFoeHp(template.baseHp, level);
+  const attack = scaleFoeAttack(template.baseAtk, level);
   return {
     id: template.id,
     name: template.name,
     emoji: template.emoji,
     hp,
     maxHp: hp,
-    attack: eased.attack,
+    attack,
     level,
   };
 }

@@ -619,7 +619,7 @@ function updateHeroColorTogglePreview(): void {
   const swatch = el.heroColorToggle.querySelector(
     ".setup-color-toggle-swatch"
   ) as HTMLElement | null;
-  swatch?.style.setProperty("--swatch-color", colors.plateBg);
+  swatch?.style.setProperty("--swatch-color", colors.accent);
   el.heroColorToggle.setAttribute("aria-label", `Card color: ${colors.label}`);
 }
 
@@ -684,7 +684,7 @@ function buildHeroColorSwatches(): void {
     btn.type = "button";
     btn.className = "setup-color-swatch";
     btn.dataset.theme = theme.id;
-    btn.style.setProperty("--swatch-color", theme.plateBg);
+    btn.style.setProperty("--swatch-color", theme.accent);
     btn.setAttribute("role", "radio");
     btn.setAttribute("aria-label", theme.label);
     btn.setAttribute("aria-checked", theme.id === pendingHeroColorTheme ? "true" : "false");

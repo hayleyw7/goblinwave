@@ -151,18 +151,19 @@ describe("level progression", () => {
     const easy = SAMPLE_FOES[0]!;
     const hard = SAMPLE_FOES[1]!;
     expect(foeLevelForTemplate(easy, 5)).toBe(1);
-    expect(foeLevelForTemplate(hard, 5)).toBe(1);
+    expect(foeLevelForTemplate(hard, 5)).toBe(2);
     expect(foeLevelForTemplate(easy, 21)).toBe(2);
     expect(foeLevelForTemplate(hard, 21)).toBe(4);
   });
 
-  it("softens waves 1-10 with starter band ease", () => {
+  it("scales early foes proportionally with player level", () => {
     const hard = SAMPLE_FOES[1]!;
-    const starter = makeFoeFromTemplate(hard, 5);
-    const mid = makeFoeFromTemplate(hard, 15);
-    expect(starter.level).toBe(1);
-    expect(starter.hp).toBeLessThan(mid.hp);
-    expect(starter.attack).toBeLessThanOrEqual(mid.attack);
+    const wave5 = makeFoeFromTemplate(hard, 5);
+    const wave15 = makeFoeFromTemplate(hard, 15);
+    expect(wave5.level).toBe(2);
+    expect(wave15.level).toBe(3);
+    expect(wave15.hp).toBeGreaterThan(wave5.hp);
+    expect(wave15.attack).toBeGreaterThan(wave5.attack);
   });
 });
 
