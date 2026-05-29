@@ -35,22 +35,45 @@
           <h2 class="setup-title">What critter are you?</h2>
           <div class="emoji-picker" id="hero-picker" role="listbox" aria-label="What critter are you?"></div>
         </div>
-        <div class="setup-actions">
-          <div class="setup-name-field">
-            <label class="setup-name-label" for="hero-name-input">Name</label>
-            <input
-              type="text"
-              id="hero-name-input"
-              class="setup-name-input"
-              maxlength="16"
-              autocomplete="nickname"
-              spellcheck="false"
-              placeholder="Up to 16 characters"
-              aria-describedby="setup-hint"
-              required
-            />
+        <div class="setup-footer">
+          <div class="setup-main-row">
+            <div class="setup-name-field">
+              <label class="setup-field-label" for="hero-name-input">Name</label>
+              <input
+                type="text"
+                id="hero-name-input"
+                class="setup-name-input"
+                maxlength="16"
+                autocomplete="nickname"
+                spellcheck="false"
+                placeholder="Up to 16 characters"
+                aria-describedby="setup-hint"
+                required
+              />
+            </div>
+            <div class="setup-color-field">
+              <span class="setup-field-label" id="hero-color-label">Color</span>
+              <button
+                type="button"
+                id="hero-color-toggle"
+                class="setup-color-toggle"
+                aria-haspopup="listbox"
+                aria-expanded="false"
+                aria-labelledby="hero-color-label"
+              >
+                <span class="setup-color-toggle-swatch" aria-hidden="true"></span>
+              </button>
+              <div
+                id="hero-color-popup"
+                class="setup-color-popup hidden"
+                role="listbox"
+                aria-labelledby="hero-color-label"
+              >
+                <div id="hero-color-swatches" class="setup-color-swatches"></div>
+              </div>
+            </div>
+            <button type="button" class="cmd cmd-start" id="setup-start-btn">Fight!</button>
           </div>
-          <button type="button" class="cmd cmd-start" id="setup-start-btn">Fight!</button>
         </div>
         <p class="setup-hint" id="setup-hint" role="status" aria-live="polite" hidden></p>
       </div>

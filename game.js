@@ -1,7 +1,89 @@
 import { FOES as FOES_RAW } from "./foes-data.js";
 import { assertAlliterativeName } from "./alliteration.js";
 import { assertHeroPickerOrderCovers, heroPickerOrderIndex } from "./hero-groups.js";
-const FOE_COLOR_THEMES = ["amber", "rose", "violet", "sky", "coral", "fuchsia"];
+const FOE_COLOR_THEMES = ["amber", "rose", "sky", "coral", "fuchsia"];
+const FOE_THEME_ACCENTS = {
+    amber: "#facc15",
+    rose: "#fb7185",
+    sky: "#38bdf8",
+    coral: "#fb923c",
+    fuchsia: "#e879f9",
+};
+function normalizeFoeColorTheme(theme) {
+    if (theme && FOE_COLOR_THEMES.includes(theme)) {
+        return theme;
+    }
+    return "amber";
+}
+const HERO_COLOR_THEMES = [
+    {
+        id: "green",
+        label: "Green",
+        accent: "#4ade80",
+        dark: "#166534",
+        plateText: "#dcfce7",
+        panelBg: "rgba(22, 101, 52, 0.22)",
+        plateBg: "rgba(22, 101, 52, 0.92)",
+        hpWrapBg: "rgba(22, 101, 52, 0.38)",
+        divider: "rgba(74, 222, 128, 0.45)",
+    },
+    {
+        id: "amber",
+        label: "Gold",
+        accent: "#facc15",
+        dark: "#854d0e",
+        plateText: "#fef9c3",
+        panelBg: "rgba(133, 77, 14, 0.22)",
+        plateBg: "rgba(133, 77, 14, 0.92)",
+        hpWrapBg: "rgba(133, 77, 14, 0.38)",
+        divider: "rgba(250, 204, 21, 0.45)",
+    },
+    {
+        id: "rose",
+        label: "Rose",
+        accent: "#fb7185",
+        dark: "#881337",
+        plateText: "#ffe4e6",
+        panelBg: "rgba(136, 19, 55, 0.22)",
+        plateBg: "rgba(136, 19, 55, 0.92)",
+        hpWrapBg: "rgba(136, 19, 55, 0.38)",
+        divider: "rgba(251, 113, 133, 0.45)",
+    },
+    {
+        id: "sky",
+        label: "Sky",
+        accent: "#38bdf8",
+        dark: "#0c4a6e",
+        plateText: "#e0f2fe",
+        panelBg: "rgba(12, 74, 110, 0.22)",
+        plateBg: "rgba(12, 74, 110, 0.92)",
+        hpWrapBg: "rgba(12, 74, 110, 0.38)",
+        divider: "rgba(56, 189, 248, 0.45)",
+    },
+    {
+        id: "coral",
+        label: "Coral",
+        accent: "#fb923c",
+        dark: "#9a3412",
+        plateText: "#ffedd5",
+        panelBg: "rgba(154, 52, 18, 0.22)",
+        plateBg: "rgba(154, 52, 18, 0.92)",
+        hpWrapBg: "rgba(154, 52, 18, 0.38)",
+        divider: "rgba(251, 146, 60, 0.45)",
+    },
+    {
+        id: "fuchsia",
+        label: "Pink",
+        accent: "#f472b6",
+        dark: "#9d174d",
+        plateText: "#fce7f3",
+        panelBg: "rgba(157, 23, 77, 0.22)",
+        plateBg: "rgba(157, 23, 77, 0.92)",
+        hpWrapBg: "rgba(157, 23, 77, 0.38)",
+        divider: "rgba(244, 114, 182, 0.45)",
+    },
+];
+const DEFAULT_HERO_COLOR_THEME = "green";
 const STORAGE_KEY = "critterwave-v1";
 const LEGACY_STORAGE_KEYS = ["goblinwave-v4", "goblinwave-v1"];
 const CAMPAIGN_WAVES = 100;
@@ -179,6 +261,8 @@ let phase = "combat";
 let actionsLocked = false;
 let pendingHeroEmoji = DEFAULT_HERO_EMOJI;
 let pendingHeroLabel = DEFAULT_HERO_LABEL;
+let heroColorTheme = DEFAULT_HERO_COLOR_THEME;
+let pendingHeroColorTheme = DEFAULT_HERO_COLOR_THEME;
 let foeColorTheme = "amber";
 let lastFoeColorTheme = null;
 let defeatVerbIndex = 0;
@@ -222,11 +306,15 @@ const el = {
     setupOverlay: document.getElementById("character-setup"),
     heroPicker: document.getElementById("hero-picker"),
     heroNameInput: document.getElementById("hero-name-input"),
+    heroColorSwatches: document.getElementById("hero-color-swatches"),
+    heroColorToggle: document.getElementById("hero-color-toggle"),
+    heroColorPopup: document.getElementById("hero-color-popup"),
     setupStartBtn: document.getElementById("setup-start-btn"),
     setupHint: document.getElementById("setup-hint"),
     gameShell: document.querySelector(".game-shell"),
 };
 let setupHintForced = false;
+let setupColorPickerBound = false;
 let confirmResolve = null;
 function showConfirm(options) {
     return new Promise((resolve) => {
@@ -292,6 +380,9 @@ function loadSave() {
             playerEmoji: parsed.playerEmoji,
             heroName: parsed.heroName,
             heroLabel: parsed.heroLabel,
+            heroColorTheme: parsed.heroColorTheme && isHeroColorTheme(parsed.heroColorTheme)
+                ? parsed.heroColorTheme
+                : undefined,
         };
     }
     catch {
@@ -337,6 +428,10 @@ function normalizeSnapshot(snap) {
         hypeLevel: snap.hypeLevel ?? 0,
         foeHypeLevel: snap.foeHypeLevel ?? snap.goblinHypeLevel ?? 0,
         foeOrderIds: snap.foeOrderIds,
+        foeColorTheme: snap.foeColorTheme,
+        heroColorTheme: snap.heroColorTheme && isHeroColorTheme(snap.heroColorTheme)
+            ? snap.heroColorTheme
+            : undefined,
     };
 }
 function persistStatsOnly() {
@@ -346,6 +441,7 @@ function persistStatsOnly() {
         runsPlayed: save.runsPlayed,
         playerEmoji: player.emoji,
         heroName: player.name,
+        heroColorTheme,
     }));
 }
 function persist(snapshot) {
@@ -357,6 +453,7 @@ function persist(snapshot) {
             runsPlayed: save.runsPlayed,
             playerEmoji: player.emoji,
             heroName: player.name,
+            heroColorTheme,
             snapshot: activeSnapshot,
         }
         : {
@@ -364,17 +461,42 @@ function persist(snapshot) {
             runsPlayed: save.runsPlayed,
             playerEmoji: player.emoji,
             heroName: player.name,
+            heroColorTheme,
         };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
 }
+function foeColorConflictsWithHero(theme) {
+    if (heroColorTheme === "green")
+        return false;
+    return heroColorTheme === theme;
+}
+function getAvailableFoeColorThemes(excludeLast) {
+    let options = FOE_COLOR_THEMES.filter((theme) => !foeColorConflictsWithHero(theme));
+    if (excludeLast && lastFoeColorTheme !== null) {
+        const withoutLast = options.filter((theme) => theme !== lastFoeColorTheme);
+        if (withoutLast.length > 0) {
+            options = withoutLast;
+        }
+    }
+    return options;
+}
 function pickNextFoeColor() {
-    const options = lastFoeColorTheme === null
-        ? [...FOE_COLOR_THEMES]
-        : FOE_COLOR_THEMES.filter((theme) => theme !== lastFoeColorTheme);
+    let options = getAvailableFoeColorThemes(true);
+    if (options.length === 0) {
+        options = getAvailableFoeColorThemes(false);
+    }
+    if (options.length === 0) {
+        options = [...FOE_COLOR_THEMES];
+    }
     const picked = options[Math.floor(Math.random() * options.length)] ?? "amber";
     lastFoeColorTheme = picked;
     foeColorTheme = picked;
     return picked;
+}
+function ensureFoeColorDistinctFromHero() {
+    if (!foeColorConflictsWithHero(foeColorTheme))
+        return;
+    pickNextFoeColor();
 }
 function applyFoeColorTheme(theme) {
     const panel = el.foePanel.querySelector(".enemy-status");
@@ -384,6 +506,7 @@ function applyFoeColorTheme(theme) {
         panel.classList.remove(`foe-theme-${name}`);
     }
     panel.classList.add(`foe-theme-${theme}`);
+    el.gameShell.style.setProperty("--foe-accent", FOE_THEME_ACCENTS[theme]);
 }
 function getSnapshot() {
     return {
@@ -396,6 +519,7 @@ function getSnapshot() {
         foeHypeLevel,
         foeOrderIds: foeOrder.map((f) => f.id),
         foeColorTheme,
+        heroColorTheme,
     };
 }
 function applySnapshot(snapshot) {
@@ -407,8 +531,13 @@ function applySnapshot(snapshot) {
     hypeLevel = snapshot.hypeLevel ?? 0;
     foeHypeLevel = snapshot.foeHypeLevel ?? 0;
     foeOrder = restoreFoeOrder(snapshot.foeOrderIds, snapshot.player.emoji);
-    foeColorTheme = snapshot.foeColorTheme ?? "amber";
+    if (snapshot.heroColorTheme) {
+        applyHeroColorTheme(snapshot.heroColorTheme);
+    }
+    foeColorTheme = normalizeFoeColorTheme(snapshot.foeColorTheme);
     lastFoeColorTheme = foeColorTheme;
+    ensureFoeColorDistinctFromHero();
+    applyFoeColorTheme(foeColorTheme);
     if (wave > CAMPAIGN_WAVES) {
         wave = CAMPAIGN_WAVES;
     }
@@ -424,6 +553,107 @@ function resolveSavedHeroName(save, emoji) {
 }
 function readHeroNameFromSetup() {
     return normalizeHeroName(el.heroNameInput.value);
+}
+function isHeroColorTheme(value) {
+    return HERO_COLOR_THEMES.some((theme) => theme.id === value);
+}
+function getHeroColorThemeDefinition(theme) {
+    return HERO_COLOR_THEMES.find((entry) => entry.id === theme) ?? HERO_COLOR_THEMES[0];
+}
+function resolveHeroColorTheme(save) {
+    if (save.heroColorTheme && isHeroColorTheme(save.heroColorTheme)) {
+        return save.heroColorTheme;
+    }
+    return DEFAULT_HERO_COLOR_THEME;
+}
+function applyHeroColorTheme(theme) {
+    const colors = getHeroColorThemeDefinition(theme);
+    heroColorTheme = theme;
+    el.playerPanel.style.setProperty("--hero", colors.accent);
+    el.playerPanel.style.setProperty("--hero-dark", colors.dark);
+    el.playerPanel.style.setProperty("--hero-panel-bg", colors.panelBg);
+    el.playerPanel.style.setProperty("--hero-plate-bg", colors.plateBg);
+    el.playerPanel.style.setProperty("--hero-plate-text", colors.plateText);
+    el.playerPanel.style.setProperty("--hero-hp-wrap-bg", colors.hpWrapBg);
+    el.playerPanel.style.setProperty("--hero-divider", colors.divider);
+    el.gameShell.style.setProperty("--hero", colors.accent);
+    el.gameShell.style.setProperty("--hero-dark", colors.dark);
+}
+function updateHeroColorTogglePreview() {
+    const colors = getHeroColorThemeDefinition(pendingHeroColorTheme);
+    const swatch = el.heroColorToggle.querySelector(".setup-color-toggle-swatch");
+    swatch?.style.setProperty("--swatch-color", colors.accent);
+    el.heroColorToggle.setAttribute("aria-label", `Card color: ${colors.label}`);
+}
+function openHeroColorPopup() {
+    el.heroColorPopup.classList.remove("hidden");
+    el.heroColorToggle.setAttribute("aria-expanded", "true");
+}
+function closeHeroColorPopup() {
+    el.heroColorPopup.classList.add("hidden");
+    el.heroColorToggle.setAttribute("aria-expanded", "false");
+}
+function toggleHeroColorPopup() {
+    if (el.heroColorPopup.classList.contains("hidden")) {
+        openHeroColorPopup();
+    }
+    else {
+        closeHeroColorPopup();
+    }
+}
+function bindSetupColorPicker() {
+    if (setupColorPickerBound)
+        return;
+    setupColorPickerBound = true;
+    el.heroColorToggle.addEventListener("click", (e) => {
+        e.stopPropagation();
+        toggleHeroColorPopup();
+    });
+    document.addEventListener("click", (e) => {
+        if (el.heroColorPopup.classList.contains("hidden"))
+            return;
+        const target = e.target;
+        if (!el.heroColorPopup.contains(target) &&
+            !el.heroColorToggle.contains(target)) {
+            closeHeroColorPopup();
+        }
+    });
+}
+function readHeroColorThemeFromSetup() {
+    return pendingHeroColorTheme;
+}
+function syncHeroColorSwatchSelection() {
+    for (const btn of el.heroColorSwatches.querySelectorAll(".setup-color-swatch")) {
+        btn.classList.toggle("selected", btn.dataset.theme === pendingHeroColorTheme);
+        btn.setAttribute("aria-checked", btn.dataset.theme === pendingHeroColorTheme ? "true" : "false");
+    }
+}
+function buildHeroColorSwatches() {
+    if (!el.heroColorSwatches)
+        return;
+    el.heroColorSwatches.innerHTML = "";
+    for (const theme of HERO_COLOR_THEMES) {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "setup-color-swatch";
+        btn.dataset.theme = theme.id;
+        btn.style.setProperty("--swatch-color", theme.accent);
+        btn.setAttribute("role", "radio");
+        btn.setAttribute("aria-label", theme.label);
+        btn.setAttribute("aria-checked", theme.id === pendingHeroColorTheme ? "true" : "false");
+        if (theme.id === pendingHeroColorTheme) {
+            btn.classList.add("selected");
+        }
+        btn.addEventListener("click", () => {
+            pendingHeroColorTheme = theme.id;
+            applyHeroColorTheme(theme.id);
+            syncHeroColorSwatchSelection();
+            updateHeroColorTogglePreview();
+            closeHeroColorPopup();
+        });
+        el.heroColorSwatches.appendChild(btn);
+    }
+    updateHeroColorTogglePreview();
 }
 function getSetupBlockers() {
     const blockers = [];
@@ -446,9 +676,12 @@ function formatSetupBlockerMessage(blockers) {
 function updateSetupStartButton() {
     const blockers = getSetupBlockers();
     const canStart = blockers.length === 0;
+    const nameMissing = blockers.includes("enter your name");
+    const hintBlockers = blockers.filter((blocker) => blocker !== "enter your name");
     el.setupStartBtn.disabled = false;
     el.setupStartBtn.classList.toggle("cmd-start-ready", canStart);
-    el.heroNameInput.classList.toggle("setup-name-input--error", setupHintForced && blockers.includes("enter your name"));
+    el.heroNameInput.classList.toggle("setup-name-input--highlight", setupHintForced && nameMissing);
+    el.heroNameInput.setAttribute("aria-invalid", setupHintForced && nameMissing ? "true" : "false");
     if (canStart || !setupHintForced) {
         if (canStart) {
             setupHintForced = false;
@@ -458,8 +691,14 @@ function updateSetupStartButton() {
         el.setupHint.classList.remove("setup-hint-error");
         return;
     }
+    if (hintBlockers.length === 0) {
+        el.setupHint.hidden = true;
+        el.setupHint.textContent = "";
+        el.setupHint.classList.remove("setup-hint-error");
+        return;
+    }
     el.setupHint.hidden = false;
-    el.setupHint.textContent = formatSetupBlockerMessage(blockers);
+    el.setupHint.textContent = formatSetupBlockerMessage(hintBlockers);
     el.setupHint.classList.add("setup-hint-error");
 }
 function showSetupBlockedHint() {
@@ -539,17 +778,17 @@ function playStageClass(className, ms) {
 }
 function clearCombatAnimations() {
     el.playerPanel.classList.remove("hero-death", "hero-death-knockback", "hero-knockback", "hero-victory-wobble", "hero-heal", "hero-dance", "hero-run-out", "hero-run-in");
-    el.foePanel.classList.remove("foe-poof", "foe-enter", "foe-knockback", "foe-dance");
+    el.foePanel.classList.remove("foe-poof", "foe-enter", "foe-knockback", "foe-dance", "foe-sprite-hidden");
     el.battleStage.classList.remove("stage-death-vignette", "stage-flash-gold");
 }
 function playHeroHeal() {
     briefClass(el.playerPanel, "hero-heal", HEAL_ANIM_MS);
 }
-function playHeroDance(foeJoins) {
+function playHeroDance() {
     briefClass(el.playerPanel, "hero-dance", DANCE_ANIM_MS);
-    if (foeJoins) {
-        window.setTimeout(() => briefClass(el.foePanel, "foe-dance", DANCE_ANIM_MS), 100);
-    }
+}
+function playFoeDance() {
+    briefClass(el.foePanel, "foe-dance", DANCE_ANIM_MS);
 }
 async function playHeroRunOut() {
     el.playerPanel.classList.remove("hero-run-in");
@@ -570,11 +809,20 @@ function playRunEntrance() {
     playFoeEntrance();
 }
 function playFoeEntrance() {
+    el.foePanel.classList.remove("foe-sprite-hidden");
     briefClass(el.foePanel, "foe-enter", FOE_ENTRANCE_MS);
 }
 function playFoePoof() {
-    briefClass(el.foePanel, "foe-poof", FOE_POOF_MS);
-    return pause(FOE_POOF_MS);
+    return new Promise((resolve) => {
+        el.foePanel.classList.remove("foe-poof", "foe-sprite-hidden");
+        void el.foePanel.offsetWidth;
+        el.foePanel.classList.add("foe-poof");
+        window.setTimeout(() => {
+            el.foePanel.classList.remove("foe-poof");
+            el.foePanel.classList.add("foe-sprite-hidden");
+            resolve();
+        }, FOE_POOF_MS);
+    });
 }
 async function playFoeDefeat(isFinal) {
     if (isFinal) {
@@ -612,6 +860,7 @@ function renderHeroSprite() {
 }
 function render() {
     renderRecords();
+    applyHeroColorTheme(heroColorTheme);
     renderHeroSprite();
     el.waveBanner.textContent = `${Math.min(wave, getCampaignLength())} / ${getCampaignLength()}`;
     el.turnLabel.textContent = String(turn);
@@ -679,11 +928,13 @@ function logWaveTransitionComplete(previousName, transition, nextName, defeatVer
     const actionLine = transition === "flee"
         ? `You run away from ${escapeHtml(previousName)},`
         : `You ${escapeHtml(defeatVerb ?? nextDefeatVerb())} ${escapeHtml(previousName)},`;
+    const nextLine = transition === "flee"
+        ? `but you run into ${escapeHtml(nextName)}!`
+        : `but ${escapeHtml(nextName)} appears!`;
     el.battleText.className = "battle-text";
     el.battleText.innerHTML = [
         `<span class="battle-line battle-player">${actionLine}</span>`,
-        `<span class="battle-line battle-pause">but then...</span>`,
-        `<span class="battle-line battle-foe">${escapeHtml(nextName)} appears!</span>`,
+        `<span class="battle-line battle-foe">${nextLine}</span>`,
     ].join("");
     revealBattleLog();
 }
@@ -700,6 +951,7 @@ async function transitionToNextWave(previousFoeName, transition, entrance = "foe
     foe = makeFoeForWave(wave);
     foeHypeLevel = 0;
     pulseWaveHud();
+    applyFoeColorTheme(foeColorTheme);
     logWaveTransitionComplete(previousFoeName, transition, foe.name, defeatVerb);
     render();
     if (entrance === "run") {
@@ -749,7 +1001,8 @@ function startWave() {
     foe = makeFoeForWave(wave);
     foeHypeLevel = 0;
     pulseWaveHud();
-    logLine(`${foe.name} appears!`, "foe");
+    applyFoeColorTheme(foeColorTheme);
+    logHtmlLine(`<span class="battle-line battle-foe">${escapeHtml(foe.name)} appears!</span>`, "info");
     render();
     playFoeEntrance();
     persist();
@@ -897,28 +1150,26 @@ async function onHeal() {
 }
 function formatDanceHypeTail(playerGain, foeJoins) {
     if (playerGain === 0) {
-        return `You get ${formatDanceHypeGain(0)}!`;
+        return "";
     }
     if (foeJoins) {
-        return `You get ${formatDanceHypeGain(1)}, but ${escapeHtml(foeDisplayName())} gets ${formatDanceHypeGain(1)} too!`;
+        return `You both get ${formatDanceHypeGain(1)}!`;
     }
     return `You get ${formatDanceHypeGain(1)}!`;
 }
-function formatDanceHypeMessage(response, playerGain, foeJoins) {
-    const opener = escapeHtml(randomDanceOpener());
-    const reaction = escapeHtml(formatFoeInText(response.message));
-    const tail = formatDanceHypeTail(playerGain, foeJoins);
-    return [
+function logDanceLines(opener, reactionHtml, tail) {
+    const lines = [
         `<span class="battle-line battle-player">${opener}</span>`,
-        `<span class="battle-line battle-foe">${reaction} ${tail}</span>`,
-    ].join("");
-}
-function logDanceMessage(html) {
+        `<span class="battle-line battle-foe">${reactionHtml}</span>`,
+    ];
+    if (tail) {
+        lines.push(`<span class="battle-line battle-hype-line">${tail}</span>`);
+    }
     el.battleText.className = "battle-text";
-    el.battleText.innerHTML = html;
+    el.battleText.innerHTML = lines.join("");
     revealBattleLog();
 }
-function onDance() {
+async function onDance() {
     const response = randomDanceResponse();
     const playerGain = getPlayerHypeGain(response);
     const joins = response.foeJoins === true;
@@ -928,8 +1179,20 @@ function onDance() {
     if (joins) {
         applyFoeDanceBuff();
     }
-    playHeroDance(joins);
-    logDanceMessage(formatDanceHypeMessage(response, playerGain, joins));
+    const opener = escapeHtml(randomDanceOpener());
+    logHtmlLine(`<span class="battle-line battle-player">${opener}</span>`, "player");
+    playHeroDance();
+    await pause(COUNTER_ATTACK_DELAY_MS);
+    const reaction = escapeHtml(formatFoeInText(response.message));
+    const tail = formatDanceHypeTail(playerGain, joins);
+    logDanceLines(opener, reaction, "");
+    if (joins) {
+        playFoeDance();
+    }
+    if (tail) {
+        await pause(COUNTER_ATTACK_DELAY_MS);
+        logDanceLines(opener, reaction, tail);
+    }
     turn += 1;
     render();
     persist();
@@ -982,16 +1245,21 @@ function buildHeroPicker() {
 }
 function showSetup() {
     const save = loadSave();
+    closeHeroColorPopup();
     pendingHeroEmoji = save.playerEmoji ?? player.emoji;
     pendingHeroLabel = getHeroLabelForEmoji(pendingHeroEmoji);
     setupHintForced = false;
     buildHeroPicker();
     el.heroNameInput.value = save.heroName ?? "";
+    pendingHeroColorTheme = resolveHeroColorTheme(save);
+    buildHeroColorSwatches();
+    applyHeroColorTheme(pendingHeroColorTheme);
     updateSetupStartButton();
     el.setupOverlay.classList.remove("hidden");
     el.gameShell.classList.add("setup-active");
 }
 function hideSetup() {
+    closeHeroColorPopup();
     el.setupOverlay.classList.add("hidden");
     el.gameShell.classList.remove("setup-active");
 }
@@ -1007,6 +1275,7 @@ function confirmHeroAndStart() {
         return false;
     }
     applyHeroChoice(pendingHeroEmoji, heroName);
+    applyHeroColorTheme(readHeroColorThemeFromSetup());
     hideSetup();
     persistStatsOnly();
     if (foe) {
@@ -1090,7 +1359,7 @@ function bindActions() {
                     await onHeal();
                     break;
                 case "dance":
-                    onDance();
+                    await onDance();
                     break;
                 case "run":
                     await onRun();
@@ -1111,6 +1380,7 @@ function bindActions() {
         void resetStats();
     });
     el.heroNameInput.addEventListener("input", updateSetupStartButton);
+    bindSetupColorPicker();
     el.setupStartBtn.addEventListener("click", () => {
         if (!confirmHeroAndStart()) {
             return;
@@ -1154,6 +1424,7 @@ function init() {
         return;
     }
     applyHeroChoice(save.playerEmoji, getHeroLabelForEmoji(save.playerEmoji));
+    applyHeroColorTheme(resolveHeroColorTheme(save));
     beginGame();
 }
 init();
