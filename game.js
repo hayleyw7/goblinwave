@@ -173,6 +173,7 @@ function restoreFoeOrder(ids, heroEmoji) {
     return buildFoeOrder(heroEmoji);
 }
 const danceResponses = [
+    // No hype — foe ignores, pans, or shuts you down.
     { message: "{foe} boos loudly.", playerHype: 0 },
     { message: "{foe} crosses their arms and watches silently.", playerHype: 0 },
     { message: "{foe} refuses to acknowledge your performance.", playerHype: 0 },
@@ -188,39 +189,41 @@ const danceResponses = [
     { message: "{foe} claps once, then stops forever.", playerHype: 0 },
     { message: "{foe} puts on sunglasses and stares at the ceiling.", playerHype: 0 },
     { message: "{foe} whispers they've seen better at a funeral.", playerHype: 0 },
-    { message: "{foe} claps politely." },
-    { message: "{foe} looks confused but supportive." },
-    { message: "{foe} tosses you a shiny pebble." },
-    { message: "{foe} looks genuinely impressed." },
-    { message: "{foe} laughs so hard they snort." },
-    { message: "{foe} chants your name." },
-    { message: "{foe} gives you a thumbs up." },
-    { message: "{foe} looks terrified by your moves." },
-    { message: "{foe} pretends to be a dance judge." },
-    { message: "{foe} wipes away a tear." },
-    { message: "{foe} screams for an encore." },
-    { message: "{foe} pulls out a tiny fan and fans you." },
-    { message: "{foe} wheezes ONE MORE TIME!" },
-    { message: "{foe} weeps with joy." },
-    { message: "{foe} whispers teach me with awe." },
-    { message: "{foe} faints from sheer awesomeness." },
-    { message: "{foe} honks a party horn once, respectfully." },
-    { message: "{foe} throws glitter into the air." },
-    { message: "{foe} starts dancing with you.", foeJoins: true },
-    { message: "{foe} starts stomping rhythmically.", foeJoins: true },
-    { message: "{foe} starts shadow dancing.", foeJoins: true },
-    { message: "{foe} spins in a circle.", foeJoins: true },
-    { message: "{foe} starts headbanging.", foeJoins: true },
-    { message: "{foe} tries to copy your moves.", foeJoins: true },
-    { message: "{foe} breakdances badly but with heart.", foeJoins: true },
-    { message: "{foe} grabs your hand for an awkward two-step.", foeJoins: true },
-    { message: "{foe} moonwalks three inches, triumphantly.", foeJoins: true },
-    { message: "{foe} does the worm. Approximately.", foeJoins: true },
-    { message: "{foe} vogues like their life depends on it.", foeJoins: true },
-    { message: "{foe} flosses. The dance. Not dental.", foeJoins: true },
-    { message: "{foe} starts a conga line of one.", foeJoins: true },
-    { message: "{foe} disco-points at the ceiling.", foeJoins: true },
-    { message: "{foe} does the robot with suspicious fluidity.", foeJoins: true },
+    { message: "{foe} looks terrified by your moves.", playerHype: 0 },
+    { message: "{foe} pretends to be a dance judge.", playerHype: 0 },
+    // +1 player hype — foe cheers from the sidelines but doesn't dance.
+    { message: "{foe} claps politely.", playerHype: 1 },
+    { message: "{foe} looks confused but supportive.", playerHype: 1 },
+    { message: "{foe} tosses you a shiny pebble.", playerHype: 1 },
+    { message: "{foe} looks genuinely impressed.", playerHype: 1 },
+    { message: "{foe} laughs so hard they snort.", playerHype: 1 },
+    { message: "{foe} chants your name.", playerHype: 1 },
+    { message: "{foe} gives you a thumbs up.", playerHype: 1 },
+    { message: "{foe} wipes away a tear.", playerHype: 1 },
+    { message: "{foe} screams for an encore.", playerHype: 1 },
+    { message: "{foe} pulls out a tiny fan and fans you.", playerHype: 1 },
+    { message: "{foe} wheezes ONE MORE TIME!", playerHype: 1 },
+    { message: "{foe} weeps with joy.", playerHype: 1 },
+    { message: "{foe} whispers teach me with awe.", playerHype: 1 },
+    { message: "{foe} faints from sheer awesomeness.", playerHype: 1 },
+    { message: "{foe} honks a party horn once, respectfully.", playerHype: 1 },
+    { message: "{foe} throws glitter into the air.", playerHype: 1 },
+    // +1 each — foe joins the dance.
+    { message: "{foe} starts dancing with you.", foeJoins: true, playerHype: 1 },
+    { message: "{foe} starts stomping rhythmically.", foeJoins: true, playerHype: 1 },
+    { message: "{foe} starts shadow dancing.", foeJoins: true, playerHype: 1 },
+    { message: "{foe} spins in a circle.", foeJoins: true, playerHype: 1 },
+    { message: "{foe} starts headbanging.", foeJoins: true, playerHype: 1 },
+    { message: "{foe} tries to copy your moves.", foeJoins: true, playerHype: 1 },
+    { message: "{foe} breakdances badly but with heart.", foeJoins: true, playerHype: 1 },
+    { message: "{foe} grabs your hand for an awkward two-step.", foeJoins: true, playerHype: 1 },
+    { message: "{foe} moonwalks three inches, triumphantly.", foeJoins: true, playerHype: 1 },
+    { message: "{foe} does the worm. Approximately.", foeJoins: true, playerHype: 1 },
+    { message: "{foe} vogues like their life depends on it.", foeJoins: true, playerHype: 1 },
+    { message: "{foe} flosses. The dance. Not dental.", foeJoins: true, playerHype: 1 },
+    { message: "{foe} starts a conga line of one.", foeJoins: true, playerHype: 1 },
+    { message: "{foe} disco-points at the ceiling.", foeJoins: true, playerHype: 1 },
+    { message: "{foe} does the robot with suspicious fluidity.", foeJoins: true, playerHype: 1 },
 ];
 const DANCE_OPENERS = [
     "You bust out your signature critter shuffle.",
@@ -236,7 +239,6 @@ const DANCE_OPENERS = [
     "You drop into a squat and wiggle.",
     "You air-guitar through an entire solo.",
     "You square-dance alone. Respectfully.",
-    "You dab. History groans.",
     "You whip and nae nae at your own risk.",
     "You do a tiny bow nobody asked for.",
     "You cha-cha with unearned swagger.",
@@ -296,7 +298,6 @@ const el = {
     restartLabel: document.querySelector("#restart-btn .cmd-label"),
     restartBtn: document.getElementById("restart-btn"),
     quitBtn: document.getElementById("quit-btn"),
-    restartRunBtn: document.getElementById("restart-run-btn"),
     resetStatsBtn: document.getElementById("reset-stats-btn"),
     confirmOverlay: document.getElementById("confirm-overlay"),
     confirmTitle: document.getElementById("confirm-title"),
@@ -1354,11 +1355,11 @@ function resetGame() {
     logLine("A new adventure begins.", "info");
     startWave();
 }
-async function quitGame() {
+async function startNewGame() {
     const confirmed = await showConfirm({
-        title: "Quit to hero select?",
-        message: "Your best wave and run count are kept, but this run will be abandoned and can't be resumed.",
-        confirmLabel: "Quit",
+        title: "Start over with a new hero?",
+        message: "Your best wave and run count stay. This run can't be continued.",
+        confirmLabel: "New game",
     });
     if (!confirmed) {
         return;
@@ -1369,22 +1370,11 @@ async function quitGame() {
     el.gameOver.classList.add("hidden");
     showSetup();
 }
-async function restartRun() {
-    const confirmed = await showConfirm({
-        title: "Restart this run?",
-        message: "You keep your character and all-time stats, but this run starts over at wave 1. This can't be undone.",
-        confirmLabel: "Restart",
-    });
-    if (!confirmed) {
-        return;
-    }
-    resetGame();
-}
 async function resetStats() {
     const confirmed = await showConfirm({
         title: "Delete everything?",
-        message: "Permanently delete your character and all-time play history. This can't be undone.",
-        confirmLabel: "Reset",
+        message: "Permanently delete your critter and all-time play history. This can't be undone.",
+        confirmLabel: "Clear data",
         danger: true,
     });
     if (!confirmed) {
@@ -1427,10 +1417,7 @@ function bindActions() {
         resetGame();
     });
     el.quitBtn.addEventListener("click", () => {
-        void quitGame();
-    });
-    el.restartRunBtn.addEventListener("click", () => {
-        void restartRun();
+        void startNewGame();
     });
     el.resetStatsBtn.addEventListener("click", () => {
         void resetStats();

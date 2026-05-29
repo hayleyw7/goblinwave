@@ -611,7 +611,7 @@ export const FOES = [
     },
     {
         "id": "shrill-shrimp",
-        "name": "Shrill Shrimp",
+        "name": "Skrill Skrimp",
         "emoji": "🦐",
         "baseHp": 9,
         "baseAtk": 3
