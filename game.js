@@ -3,6 +3,7 @@ import { assertAlliterativeName } from "./alliteration.js";
 import { buildFoeOrder as buildFoeOrderForHero, CAMPAIGN_WAVE_COUNT, DEFEAT_VERBS, foeColorConflictsWithHero as heroFoeColorConflicts, formatFoeInText as formatFoeMessage, formatSetupBlockerMessage, getSetupBlockers as getSetupBlockersForInput, makeFoeForWave as buildWaveFoe, nextDefeatVerb as advanceDefeatVerb, heroLabelFromFoeName, normalizeHeroName, restoreFoeOrder as restoreFoeOrderForHero, } from "./game-logic.js";
 import { formatDanceHypeTail, getPlayerHypeGain, pickRandomDanceOpener, pickRandomDanceResponse, resetDancePicker, } from "./dance-responses.js";
 import { assertHeroPickerOrderCovers, heroPickerOrderIndex } from "./hero-groups.js";
+import { startVictoryCelebration, stopVictoryCelebration, } from "./victory-celebration.js";
 const FOE_COLOR_THEMES = ["amber", "rose", "sky", "coral", "fuchsia"];
 const FOE_THEME_ACCENTS = {
     amber: "#facc15",
@@ -181,6 +182,7 @@ const el = {
     battleText: document.getElementById("battle-text"),
     actions: document.getElementById("actions"),
     gameOver: document.getElementById("game-over"),
+    victoryEmojiLayer: document.getElementById("victory-emoji-layer"),
     gameOverTag: document.getElementById("game-over-tag"),
     gameOverSummary: document.getElementById("game-over-summary"),
     restartLabel: document.querySelector("#restart-btn .cmd-label"),
@@ -777,6 +779,9 @@ function render() {
         foeHpBar?.classList.toggle("hp-low", foe.hp / foe.maxHp < 0.3);
     }
     const inEndScreen = phase === "gameover" || phase === "victory";
+    if (phase !== "victory") {
+        stopVictoryCelebration(el.victoryEmojiLayer);
+    }
     el.gameOver.classList.toggle("hidden", !inEndScreen);
     el.gameOver.classList.toggle("game-victory", phase === "victory");
     el.gameOverTag.textContent = phase === "victory" ? "YOU WIN!" : "GAME OVER";
@@ -923,9 +928,10 @@ function updateRecordsOnVictory() {
         playerEmoji: player.emoji,
         heroName: player.name,
     }));
-    el.gameOverSummary.textContent = `You survived all ${CAMPAIGN_WAVES} waves!`;
+    el.gameOverSummary.textContent = `All ${CAMPAIGN_WAVES} waves cleared. Critterwave legend.`;
 }
 function endGame() {
+    stopVictoryCelebration(el.victoryEmojiLayer);
     phase = "gameover";
     clearAllHype();
     logLine("You lose! Game over.", "lose");
@@ -938,6 +944,7 @@ function winCampaign() {
     clearAllHype();
     logLine(`Wave ${CAMPAIGN_WAVES} cleared! Total victory!`, "win");
     updateRecordsOnVictory();
+    startVictoryCelebration(el.victoryEmojiLayer);
     persist();
     render();
 }
@@ -1190,6 +1197,7 @@ function resetGame() {
     resetDancePicker();
     phase = "combat";
     clearCombatAnimations();
+    stopVictoryCelebration(el.victoryEmojiLayer);
     el.gameOver.classList.add("hidden");
     clearLog();
     logLine("A new adventure begins.", "info");
@@ -1207,6 +1215,7 @@ async function startNewGame() {
     persistStatsOnly();
     foe = null;
     phase = "combat";
+    stopVictoryCelebration(el.victoryEmojiLayer);
     el.gameOver.classList.add("hidden");
     showSetup();
 }
@@ -1227,6 +1236,7 @@ async function resetStats() {
     renderRecords();
     foe = null;
     phase = "combat";
+    stopVictoryCelebration(el.victoryEmojiLayer);
     el.gameOver.classList.add("hidden");
     showSetup();
 }

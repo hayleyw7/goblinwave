@@ -23,6 +23,10 @@ import {
   resetDancePicker,
 } from "./dance-responses.js";
 import { assertHeroPickerOrderCovers, heroPickerOrderIndex } from "./hero-groups.js";
+import {
+  startVictoryCelebration,
+  stopVictoryCelebration,
+} from "./victory-celebration.js";
 type Player = {
   name: string;
   hp: number;
@@ -276,6 +280,7 @@ const el = {
   battleText: document.getElementById("battle-text")!,
   actions: document.getElementById("actions")!,
   gameOver: document.getElementById("game-over")!,
+  victoryEmojiLayer: document.getElementById("victory-emoji-layer")!,
   gameOverTag: document.getElementById("game-over-tag")!,
   gameOverSummary: document.getElementById("game-over-summary")!,
   restartLabel: document.querySelector("#restart-btn .cmd-label")!,
@@ -996,6 +1001,9 @@ function render(): void {
   }
 
   const inEndScreen = phase === "gameover" || phase === "victory";
+  if (phase !== "victory") {
+    stopVictoryCelebration(el.victoryEmojiLayer);
+  }
   el.gameOver.classList.toggle("hidden", !inEndScreen);
   el.gameOver.classList.toggle("game-victory", phase === "victory");
   el.gameOverTag.textContent = phase === "victory" ? "YOU WIN!" : "GAME OVER";
@@ -1193,10 +1201,11 @@ function updateRecordsOnVictory(): void {
     })
   );
 
-  el.gameOverSummary.textContent = `You survived all ${CAMPAIGN_WAVES} waves!`;
+  el.gameOverSummary.textContent = `All ${CAMPAIGN_WAVES} waves cleared. Critterwave legend.`;
 }
 
 function endGame(): void {
+  stopVictoryCelebration(el.victoryEmojiLayer);
   phase = "gameover";
   clearAllHype();
   logLine("You lose! Game over.", "lose");
@@ -1210,6 +1219,7 @@ function winCampaign(): void {
   clearAllHype();
   logLine(`Wave ${CAMPAIGN_WAVES} cleared! Total victory!`, "win");
   updateRecordsOnVictory();
+  startVictoryCelebration(el.victoryEmojiLayer);
   persist();
   render();
 }
@@ -1504,6 +1514,7 @@ function resetGame(): void {
   resetDancePicker();
   phase = "combat";
   clearCombatAnimations();
+  stopVictoryCelebration(el.victoryEmojiLayer);
   el.gameOver.classList.add("hidden");
   clearLog();
   logLine("A new adventure begins.", "info");
@@ -1523,6 +1534,7 @@ async function startNewGame(): Promise<void> {
   persistStatsOnly();
   foe = null;
   phase = "combat";
+  stopVictoryCelebration(el.victoryEmojiLayer);
   el.gameOver.classList.add("hidden");
   showSetup();
 }
@@ -1548,6 +1560,7 @@ async function resetStats(): Promise<void> {
   renderRecords();
   foe = null;
   phase = "combat";
+  stopVictoryCelebration(el.victoryEmojiLayer);
   el.gameOver.classList.add("hidden");
   showSetup();
 }

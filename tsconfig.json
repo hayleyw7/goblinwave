@@ -12,6 +12,7 @@
     "alliteration.ts",
     "hero-groups.ts",
     "dance-responses.ts",
-    "game-logic.ts"
+    "game-logic.ts",
+    "victory-celebration.ts"
   ]
 }
