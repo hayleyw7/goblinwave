@@ -1,3 +1,19 @@
+/** Hidden from hero picker on narrow viewports only (still in roster / desktop picker). */
+export const MOBILE_HIDDEN_PICKER_EMOJIS = new Set<string>(["😈"]);
+
+export const MOBILE_HERO_PICKER_MEDIA = "(max-width: 480px)";
+
+export function isMobileHeroPickerViewport(
+  matches: (query: string) => boolean = (query) =>
+    typeof window !== "undefined" && window.matchMedia(query).matches
+): boolean {
+  return matches(MOBILE_HERO_PICKER_MEDIA);
+}
+
+export function isHeroEmojiHiddenInPicker(emoji: string, mobile: boolean): boolean {
+  return mobile && MOBILE_HIDDEN_PICKER_EMOJIS.has(emoji);
+}
+
 /** Flat picker order — similar emojis adjacent, no visible categories. */
 export const HERO_PICKER_ORDER = [
   "🐱",

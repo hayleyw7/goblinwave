@@ -62,7 +62,12 @@ import {
   sanitizeTurn,
   sanitizeWave,
 } from "./lib/save-validation.js";
-import { assertHeroPickerOrderCovers, heroPickerOrderIndex } from "./lib/hero-groups.js";
+import {
+  assertHeroPickerOrderCovers,
+  heroPickerOrderIndex,
+  isHeroEmojiHiddenInPicker,
+  isMobileHeroPickerViewport,
+} from "./lib/hero-groups.js";
 import {
   COLOR_THEME_IDS,
   COLOR_THEMES,
@@ -1382,7 +1387,7 @@ function render(): void {
   el.gameOver.classList.toggle("hidden", !inEndScreen);
   el.gameOver.classList.toggle("game-victory", phase === "victory");
   el.gameOverTag.textContent = phase === "victory" ? "YOU WIN!" : "GAME OVER";
-  el.restartLabel.textContent = phase === "victory" ? "Play again?" : "Try again?";
+  el.restartLabel.textContent = phase === "victory" ? "Play Again?" : "Try Again?";
   el.actions.classList.toggle("hidden", inEndScreen);
   el.turnLabel.classList.toggle("hidden", inEndScreen);
   syncFirstHypeFlashes();
@@ -2056,13 +2061,34 @@ function applyHeroChoice(emoji: string, label: string): void {
   pendingHeroLabel = label;
 }
 
+function firstHeroEmojiForPicker(mobile = isMobileHeroPickerViewport()): string {
+  for (const hero of HEROES) {
+    if (!isHeroEmojiHiddenInPicker(hero.emoji, mobile)) {
+      return hero.emoji;
+    }
+  }
+  return HEROES[0]!.emoji;
+}
+
+function resolvePickerHeroEmoji(emoji: string): string {
+  const mobile = isMobileHeroPickerViewport();
+  if (!isHeroEmojiHiddenInPicker(emoji, mobile)) {
+    return emoji;
+  }
+  return firstHeroEmojiForPicker(mobile);
+}
+
 function buildHeroPicker(): void {
   el.heroPicker.replaceChildren();
 
   const grid = document.createElement("div");
   grid.className = "emoji-picker-grid";
+  const mobile = isMobileHeroPickerViewport();
 
   for (const hero of HEROES) {
+    if (isHeroEmojiHiddenInPicker(hero.emoji, mobile)) {
+      continue;
+    }
     const btn = document.createElement("button");
     btn.type = "button";
     btn.className = "emoji-pick";
@@ -2096,7 +2122,7 @@ function buildHeroPicker(): void {
 function showSetup(): void {
   const save = loadSave();
   closeHeroColorPopup();
-  pendingHeroEmoji = save.playerEmoji ?? player.emoji;
+  pendingHeroEmoji = resolvePickerHeroEmoji(save.playerEmoji ?? player.emoji);
   pendingHeroLabel = getHeroLabelForEmoji(pendingHeroEmoji);
   setupHintForced = false;
   buildHeroPicker();
@@ -2164,7 +2190,7 @@ async function startNewGame(): Promise<void> {
     title: "Start a new run?",
     message:
       "Your high score and run count stay. This run can't be continued.",
-    confirmLabel: "New run",
+    confirmLabel: "New Run",
   });
   if (!confirmed) {
     return;
@@ -2182,7 +2208,7 @@ async function resetStats(): Promise<void> {
     title: "Delete everything?",
     message:
       "Permanently delete your critter and all-time play history. This can't be undone.",
-    confirmLabel: "Clear data",
+    confirmLabel: "Clear Data",
     danger: true,
   });
   if (!confirmed) {

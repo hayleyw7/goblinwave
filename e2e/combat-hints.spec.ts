@@ -490,7 +490,7 @@ test.describe("combat — foe hype", () => {
 test.describe("ui labels", () => {
   test("shows high score and new run labels", async ({ page }) => {
     await startFreshRun(page);
-    await expect(page.getByText("High score", { exact: true })).toBeVisible();
-    await expect(page.getByRole("button", { name: "New run" })).toBeVisible();
+    await expect(page.getByText("High Score", { exact: true })).toBeVisible();
+    await expect(page.getByRole("button", { name: "New Run" })).toBeVisible();
   });
 });

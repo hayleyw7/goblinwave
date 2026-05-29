@@ -61,11 +61,27 @@ test.describe("Critterwave — happy paths", () => {
 
   test("new run returns to hero setup", async ({ page }) => {
     await startFreshRun(page);
-    await page.getByRole("button", { name: "New run" }).click();
+    await page.getByRole("button", { name: "New Run" }).click();
     await page.locator("#confirm-ok").click();
     await expect(
       page.getByRole("heading", { name: "Which critter are you?" })
     ).toBeVisible();
+  });
+
+  test("hides devil emoji in hero picker on mobile only", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await clearSave(page);
+    await expect(
+      page.getByRole("heading", { name: "Which critter are you?" })
+    ).toBeVisible();
+    await expect(page.locator('.emoji-pick[data-emoji="😈"]')).toHaveCount(0);
+
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.reload();
+    await expect(
+      page.getByRole("heading", { name: "Which critter are you?" })
+    ).toBeVisible();
+    await expect(page.locator('.emoji-pick[data-emoji="😈"]')).toHaveCount(1);
   });
 });
 
@@ -115,7 +131,7 @@ test.describe("Critterwave — sad paths", () => {
 
   test("new run setup survives reload", async ({ page }) => {
     await startFreshRun(page);
-    await page.getByRole("button", { name: "New run" }).click();
+    await page.getByRole("button", { name: "New Run" }).click();
     await page.locator("#confirm-ok").click();
     await expect(
       page.getByRole("heading", { name: "Which critter are you?" })
@@ -130,7 +146,7 @@ test.describe("Critterwave — sad paths", () => {
 
   test("clear data resets to setup", async ({ page }) => {
     await startFreshRun(page);
-    await page.getByRole("button", { name: "Clear data" }).click();
+    await page.getByRole("button", { name: "Clear Data" }).click();
     await page.locator("#confirm-ok").click();
     await expect(
       page.getByRole("heading", { name: "Which critter are you?" })

@@ -4,6 +4,9 @@ import {
   assertHeroPickerOrderCovers,
   HERO_PICKER_ORDER,
   heroPickerOrderIndex,
+  isHeroEmojiHiddenInPicker,
+  isMobileHeroPickerViewport,
+  MOBILE_HIDDEN_PICKER_EMOJIS,
 } from "../src/lib/hero-groups.js";
 
 describe("HERO_PICKER_ORDER", () => {
@@ -36,6 +39,22 @@ describe("assertHeroPickerOrderCovers", () => {
     );
   });
 
+});
+
+describe("mobile hero picker visibility", () => {
+  it("hides devil emoji on mobile only", () => {
+    expect(MOBILE_HIDDEN_PICKER_EMOJIS.has("😈")).toBe(true);
+    expect(isHeroEmojiHiddenInPicker("😈", true)).toBe(true);
+    expect(isHeroEmojiHiddenInPicker("😈", false)).toBe(false);
+    expect(isHeroEmojiHiddenInPicker("🐱", true)).toBe(false);
+  });
+
+  it("uses the 480px setup mobile breakpoint", () => {
+    expect(
+      isMobileHeroPickerViewport((query) => query === "(max-width: 480px)")
+    ).toBe(true);
+    expect(isMobileHeroPickerViewport(() => false)).toBe(false);
+  });
 });
 
 describe("heroPickerOrderIndex", () => {
