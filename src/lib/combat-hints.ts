@@ -190,14 +190,38 @@ export function recordAttackForHints(flags: CombatHintsState): CombatHintsState 
   return { ...flags, dismissedAttackHint: true };
 }
 
-export function recordHealForHints(flags: CombatHintsState): CombatHintsState {
+export function dismissHealHint(flags: CombatHintsState): CombatHintsState {
   if (flags.dismissedHealHint) {
     return flags;
   }
+  return { ...flags, dismissedHealHint: true };
+}
+
+/** Wave top-up or other full recovery after a low-HP teach moment — do not re-blink heal later. */
+export function dismissHealHintIfWasLow(
+  flags: CombatHintsState,
+  hpBefore: number,
+  maxHp: number
+): CombatHintsState {
+  if (flags.dismissedHealHint || !isLowHpForHint(hpBefore, maxHp)) {
+    return flags;
+  }
+  return dismissHealHint(flags);
+}
+
+export function recordHealForHints(
+  flags: CombatHintsState,
+  options: { armDance?: boolean } = {}
+): CombatHintsState {
+  if (flags.dismissedHealHint) {
+    return flags;
+  }
+  const armDance = options.armDance ?? true;
   return {
     ...flags,
     dismissedHealHint: true,
-    pendingDanceHintAfterHeal: true,
+    pendingDanceHintAfterHeal:
+      armDance && !flags.dismissedDanceHint ? true : flags.pendingDanceHintAfterHeal,
   };
 }
 

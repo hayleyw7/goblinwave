@@ -87,6 +87,8 @@ import {
   createCombatHintsState,
   combatHintsForSnapshot,
   deferDanceHintAfterRun,
+  dismissHealHint,
+  dismissHealHintIfWasLow,
   maybeArmDanceHintForWave,
   onNextFoeForHints,
   onVictoryForHints,
@@ -1504,6 +1506,7 @@ async function transitionToNextWave(
     wave += 1;
     const levelBefore = playerLevelForWave(wave - 1);
     const hpBeforeHeal = player.hp;
+    const maxHpBeforeHeal = player.maxHp;
     const advanced = advanceFoeQueueAfterVictory(
       foeQueue,
       deferredFoeIds,
@@ -1525,6 +1528,11 @@ async function transitionToNextWave(
     );
     combatHints = waveHealFlash.flags;
     flashWaveVictoryHealHp = waveHealFlash.flashHp;
+    combatHints = dismissHealHintIfWasLow(
+      combatHints,
+      hpBeforeHeal,
+      maxHpBeforeHeal
+    );
     combatHints = onVictoryForHints(combatHints);
     foe = spawnFoeFromQueue();
     combatHints = onNextFoeForHints(combatHints);
@@ -1907,6 +1915,7 @@ function applyFleeHeal(): void {
   const { rolled, gained } = rollAndApplyPlayerHeal();
   showPlayerHealRoll(rolled);
   if (gained > 0) {
+    combatHints = dismissHealHint(combatHints);
     render();
     persist();
   }
@@ -1925,13 +1934,13 @@ function onHeal(): void {
 
   skipPlayerHypeTeachThisRender = true;
 
-  const firstHeal = !combatHints.dismissedHealHint;
-  combatHints = recordHealForHints(combatHints);
-  if (firstHeal) {
+  const { rolled, gained, hpBefore } = rollAndApplyPlayerHeal();
+  const firstMeaningfulHeal =
+    !combatHints.dismissedHealHint && gained > 0;
+  combatHints = recordHealForHints(combatHints, { armDance: gained > 0 });
+  if (firstMeaningfulHeal) {
     playFirstHealHpFlash();
   }
-
-  const { rolled, gained, hpBefore } = rollAndApplyPlayerHeal();
   showPlayerHealRoll(rolled);
 
   const healGrantsHype = hpBefore < player.maxHp;

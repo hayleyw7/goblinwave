@@ -6,6 +6,8 @@ import {
   isLowHpForHint,
   LOW_HP_HINT_RATIO,
   deferDanceHintAfterRun,
+  dismissHealHint,
+  dismissHealHintIfWasLow,
   DANCE_HINT_FALLBACK_WAVE,
   maybeArmDanceHintForWave,
   onNextFoeForHints,
@@ -75,12 +77,33 @@ describe("combat hints — per-run dismissals", () => {
     expect(recordAttackForHints(once)).toBe(once);
   });
 
-  it("heal hint dismisses on any heal, not only while hurt", () => {
-    const after = recordHealForHints(fresh());
-    expect(shouldShowHealHint(after, 8, 20, combat, true)).toBe(false);
-    expect(shouldShowHealHint(after, 20, 20, combat, true)).toBe(false);
+  it("heal hint dismisses on any heal button press", () => {
+    const wasted = recordHealForHints(fresh(), { armDance: false });
+    expect(shouldShowHealHint(wasted, 8, 20, combat, true)).toBe(false);
+    expect(shouldShowHealHint(wasted, 20, 20, combat, true)).toBe(false);
+    expect(wasted.pendingDanceHintAfterHeal).toBe(false);
+    expect(recordHealForHints(wasted)).toBe(wasted);
+  });
+
+  it("arms dance only after a heal that restores hp", () => {
+    const after = recordHealForHints(fresh(), { armDance: true });
     expect(after.pendingDanceHintAfterHeal).toBe(true);
     expect(recordHealForHints(after)).toBe(after);
+  });
+
+  it("dismissHealHint only clears heal glow without arming dance", () => {
+    const after = dismissHealHint(fresh());
+    expect(shouldShowHealHint(after, 8, 20, combat, true)).toBe(false);
+    expect(after.pendingDanceHintAfterHeal).toBe(false);
+  });
+
+  it("dismissHealHintIfWasLow clears heal glow after low-hp wave recovery", () => {
+    const low = dismissHealHintIfWasLow(fresh(), 10, 20);
+    expect(shouldShowHealHint(low, 8, 20, combat, true)).toBe(false);
+    expect(dismissHealHintIfWasLow(low, 10, 20)).toBe(low);
+
+    const full = dismissHealHintIfWasLow(fresh(), 18, 20);
+    expect(shouldShowHealHint(full, 8, 20, combat, true)).toBe(true);
   });
 
   it("dance hint dismisses on any dance and clears active foe flag", () => {
@@ -107,14 +130,21 @@ describe("combat hints — heal before dance ordering", () => {
     expect(hintSnapshot(primed, { hp: 10 }).dance).toBe(true);
   });
 
-  it("shows dance on next foe even at full hp after heal", () => {
-    const afterHeal = recordHealForHints(fresh());
+  it("shows dance on next foe after a heal that restored hp", () => {
+    const afterHeal = recordHealForHints(fresh(), { armDance: true });
     expect(shouldShowDanceHint(afterHeal, 20, 20, combat, true, 0, 3, 0)).toBe(false);
 
     const nextFoe = onNextFoeForHints(afterHeal);
     expect(shouldShowDanceHint(nextFoe, 20, 20, combat, true, 0, 3, 0)).toBe(true);
     expect(nextFoe.pendingDanceHintAfterHeal).toBe(false);
     expect(nextFoe.showDanceHintThisFoe).toBe(true);
+  });
+
+  it("does not arm dance after a wasted heal at full hp", () => {
+    const afterHeal = recordHealForHints(fresh(), { armDance: false });
+    const nextFoe = onNextFoeForHints(afterHeal);
+    expect(nextFoe.showDanceHintThisFoe).toBe(false);
+    expect(shouldShowDanceHint(nextFoe, 20, 20, combat, true, 0, 3, 0)).toBe(false);
   });
 
   it("does not arm dance hint without healing first", () => {

@@ -47,10 +47,86 @@ test.describe("combat hints — button glow", () => {
     await startFreshRun(page);
     await patchSaveSnapshot(page, {
       player: { hp: 10, maxHp: 20 },
-      combatHints: { dismissedHealHint: true },
+      combatHints: { dismissedAttackHint: true },
     });
     await page.reload();
+
+    await page.getByRole("button", { name: "Heal" }).click();
+    await expect(page.locator("#battle-text")).toContainText(/healed yourself/i, {
+      timeout: 10_000,
+    });
     await expect(page.locator("#cmd-heal")).toHaveAttribute("data-combat-hint", "off");
+
+    await patchSaveSnapshot(page, { player: { hp: 8, maxHp: 20 } });
+    await page.reload();
+    await expect(page.locator("#cmd-heal")).toHaveAttribute("data-combat-hint", "off");
+  });
+
+  test("heal hint stays off after run grants a free heal", async ({ page }) => {
+    await startFreshRun(page);
+    await patchSaveSnapshot(page, {
+      player: { hp: 10, maxHp: 20 },
+      combatHints: { dismissedAttackHint: true },
+    });
+    await page.reload();
+
+    await clickCombatRun(page);
+    await expect(page.locator("#battle-text")).toContainText(/run into/i, {
+      timeout: 15_000,
+    });
+
+    await patchSaveSnapshot(page, { player: { hp: 8, maxHp: 20 } });
+    await page.reload();
+    await expect(page.locator("#cmd-heal")).toHaveAttribute("data-combat-hint", "off");
+  });
+
+  test("heal hint stays off after topping up from a low-hp kill", async ({ page }) => {
+    await startFreshRun(page);
+    await patchSaveSnapshot(page, {
+      player: { hp: 10, maxHp: 20 },
+      foe: { hp: 1, maxHp: 10 },
+      combatHints: { dismissedAttackHint: true },
+    });
+    await page.reload();
+
+    await page.getByRole("button", { name: "Attack" }).click();
+    await expect(page.locator("#battle-text")).toContainText(/You (hit|defeat|vanquish|crush)/i, {
+      timeout: 10_000,
+    });
+    await expect(page.locator("#battle-text")).toContainText(/appears!/i, {
+      timeout: 15_000,
+    });
+
+    await patchSaveSnapshot(page, { player: { hp: 8, maxHp: 20 } });
+    await page.reload();
+    await expect(page.locator("#cmd-heal")).toHaveAttribute("data-combat-hint", "off");
+  });
+  test("dance does not glow on wave 2 after wasted full-hp heal", async ({ page }) => {
+    await startFreshRun(page);
+    await patchSaveSnapshot(page, {
+      player: { hp: 20, maxHp: 20 },
+      foe: { hp: 1, maxHp: 10 },
+      combatHints: { dismissedAttackHint: true },
+    });
+    await page.reload();
+
+    await page.getByRole("button", { name: "Heal" }).click();
+    await expect(page.locator("#battle-text")).toContainText(/healed yourself/i, {
+      timeout: 10_000,
+    });
+    await expect(page.locator("#battle-text")).toContainText(/hits you for/i, {
+      timeout: 10_000,
+    });
+    await expect(page.locator("#cmd-dance")).toHaveAttribute("data-combat-hint", "off");
+
+    await expect(async () => {
+      await page.getByRole("button", { name: "Attack" }).click();
+      await expect(page.locator("#battle-text")).toContainText(/You (hit|defeat|vanquish|crush)/i);
+    }).toPass({ timeout: 10_000 });
+    await expect(page.locator("#battle-text")).toContainText(/appears!/i, {
+      timeout: 15_000,
+    });
+    await expect(page.locator("#cmd-dance")).toHaveAttribute("data-combat-hint", "off");
   });
 });
 
