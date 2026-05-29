@@ -121,6 +121,7 @@ import {
 } from "./ui/victory-celebration.js";
 
 const HYPE_METER_FLASH_MS = 450 * 3 + 50;
+const WAVE_RESTORE_BLINK_MS = 450 * 3 + 50;
 
 declare global {
   interface Window {
@@ -354,6 +355,7 @@ let displayedFoeHype = 0;
 let skipPlayerHypeTeachThisRender = false;
 /** Skip HYPE teach pulses on the first render after mid-run restore. */
 let suppressTeachFlashesThisRender = false;
+let pendingWaveRestoreBlink = false;
 
 const el = {
   arena: document.getElementById("arena")!,
@@ -1172,7 +1174,16 @@ function playStageClass(className: string, ms: number): Promise<void> {
   });
 }
 
+function playWaveRestoreBlink(): void {
+  const waveLine = el.waveBanner;
+  waveLine.classList.remove("hud-restore-blink");
+  void waveLine.offsetWidth;
+  waveLine.classList.add("hud-restore-blink");
+  window.setTimeout(() => waveLine.classList.remove("hud-restore-blink"), WAVE_RESTORE_BLINK_MS);
+}
+
 function clearCombatAnimations(): void {
+  el.waveBanner.classList.remove("hud-restore-blink");
   el.playerPanel.classList.remove(
     "hero-death",
     "hero-death-knockback",
@@ -2317,8 +2328,11 @@ function beginGame(): void {
     );
     render();
     persist();
+    pendingWaveRestoreBlink = true;
     return;
   }
+
+  pendingWaveRestoreBlink = false;
 
   if (snapshot?.phase === "gameover" || snapshot?.phase === "victory") {
     resetGame();
@@ -2331,6 +2345,13 @@ function beginGame(): void {
 function finishBoot(): void {
   requestAnimationFrame(() => {
     document.body.classList.remove("is-booting");
+    if (!pendingWaveRestoreBlink) {
+      return;
+    }
+    pendingWaveRestoreBlink = false;
+    requestAnimationFrame(() => {
+      playWaveRestoreBlink();
+    });
   });
 }
 

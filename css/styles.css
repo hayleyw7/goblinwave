@@ -128,20 +128,6 @@ body.is-booting .game-shell {
   visibility: hidden;
 }
 
-body.is-booting .status-panel,
-body.is-booting .hp-fill,
-body.is-booting .hype-fill,
-body.is-booting .xp-fill {
-  transition: none !important;
-}
-
-body.is-booting .hype-stat-wrap.hype-first-dance-flash .hype-bar,
-body.is-booting .hype-stat-wrap.hype-first-dance-flash .hype-stat,
-body.is-booting .hype-stat-wrap.hype-maxed-flash .hype-bar,
-body.is-booting .hype-stat-wrap.hype-maxed-flash .hype-stat {
-  animation: none !important;
-}
-
 .game-shell {
   --foe-accent: #facc15;
   position: relative;
@@ -650,6 +636,10 @@ body.is-booting .hype-stat-wrap.hype-maxed-flash .hype-stat {
   letter-spacing: 0.04em;
   color: var(--text-dim);
   line-height: 1.2;
+}
+
+.hud-wave-line.hud-restore-blink {
+  animation: hud-restore-blink 0.45s ease-out 3;
 }
 
 .hud-xp-block {
@@ -1924,6 +1914,12 @@ body.is-booting .hype-stat-wrap.hype-maxed-flash .hype-stat {
     box-shadow: 0 0 0 2px #fde047;
   }
 
+  .hud-wave-line.hud-restore-blink {
+    animation: none;
+    color: var(--highlight);
+    text-shadow: 0 0 10px rgba(253, 224, 71, 0.75);
+  }
+
   .setup-name-input.setup-name-teach-flash {
     animation: none;
     border-color: #fde047;
@@ -1937,6 +1933,20 @@ body.is-booting .hype-stat-wrap.hype-maxed-flash .hype-stat {
 
 .wave-pop {
   animation: wave-pop 0.5s ease-out;
+}
+
+@keyframes hud-restore-blink {
+  0%,
+  100% {
+    color: var(--text);
+    filter: brightness(1);
+    text-shadow: none;
+  }
+  50% {
+    color: var(--highlight);
+    filter: brightness(1.15);
+    text-shadow: 0 0 12px rgba(253, 224, 71, 0.65);
+  }
 }
 
 @keyframes wave-pop {
