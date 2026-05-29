@@ -1333,8 +1333,9 @@ function render(): void {
   renderRecords();
   applyHeroColorTheme(heroColorTheme);
   renderHeroSprite();
-  el.waveBanner.textContent = `${Math.min(wave, getCampaignLength())} / ${getCampaignLength()}`;
-  el.turnLabel.textContent = String(turn);
+  el.waveBanner.textContent = `Wave ${Math.min(wave, getCampaignLength())} / ${getCampaignLength()}`;
+  const inEndScreen = phase === "gameover" || phase === "victory";
+  el.turnLabel.textContent = inEndScreen ? "-" : String(turn);
   const xp = xpProgressForDisplay(wave, phase);
   setHpBar(el.xpFill, xp.current, xp.max);
   el.xpText.textContent = `${xpPercentForDisplay(wave, phase)}%`;
@@ -1382,7 +1383,6 @@ function render(): void {
     el.foeStatus.classList.remove("hype-full");
   }
 
-  const inEndScreen = phase === "gameover" || phase === "victory";
   if (phase !== "victory") {
     stopVictoryCelebration(el.victoryEmojiLayer);
   }
@@ -1391,7 +1391,6 @@ function render(): void {
   el.gameOverTag.textContent = phase === "victory" ? "YOU WIN!" : "GAME OVER";
   el.restartLabel.textContent = phase === "victory" ? "Play Again?" : "Try Again?";
   el.actions.classList.toggle("hidden", inEndScreen);
-  el.turnLabel.classList.toggle("hidden", inEndScreen);
   syncFirstHypeFlashes();
   syncCombatHintClasses();
 }

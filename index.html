@@ -120,17 +120,11 @@
       <div class="playfield">
         <div class="hud">
           <div class="hud-stats">
-            <div class="hud-block hud-wave">
-              <span class="hud-label">Wave</span>
-              <span class="hud-value" id="wave-banner">1</span>
-            </div>
-            <div class="hud-block hud-turn">
-              <span class="hud-label">Turn</span>
-              <span class="hud-value" id="turn-label">1</span>
-            </div>
-            <div class="hud-block hud-records">
-              <span class="hud-label">High Score</span>
-              <span class="hud-value" id="stat-best-wave">0</span>
+            <div class="hud-progress">
+              <p class="hud-wave-line" id="wave-banner">Wave 1 / 100</p>
+              <p class="hud-turn-line">
+                Turn <span id="turn-label">1</span>
+              </p>
             </div>
           </div>
           <div class="hud-xp-block">
@@ -303,10 +297,16 @@
       </div>
 
       <footer class="records-bar" aria-label="Lifetime stats and game options">
-        <span class="records-stat">
-          <span>Runs Played</span>
-          <strong id="stat-runs">0</strong>
-        </span>
+        <div class="records-stats">
+          <span class="records-stat">
+            <span>High Score</span>
+            <strong id="stat-best-wave">0</strong>
+          </span>
+          <span class="records-stat">
+            <span>Runs Played</span>
+            <strong id="stat-runs">0</strong>
+          </span>
+        </div>
         <div class="meta-actions">
           <button type="button" class="meta-btn" id="quit-btn">New Run</button>
           <button type="button" class="meta-btn meta-btn-danger" id="reset-stats-btn">

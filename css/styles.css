@@ -605,8 +605,36 @@ body.is-booting .game-shell {
 }
 
 .hud-stats {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  display: flex;
+  justify-content: center;
+  padding: var(--space-2) var(--space-3) var(--space-1);
+}
+
+.hud-progress {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+  text-align: center;
+}
+
+.hud-wave-line {
+  margin: 0;
+  font-family: var(--font-ui);
+  font-size: clamp(1.35rem, 4.5vw, 1.85rem);
+  font-weight: bold;
+  letter-spacing: 0.05em;
+  color: var(--text);
+  line-height: 1.1;
+}
+
+.hud-turn-line {
+  margin: 0;
+  font-family: var(--font-ui);
+  font-size: 0.95rem;
+  letter-spacing: 0.04em;
+  color: var(--text-dim);
+  line-height: 1.2;
 }
 
 .hud-xp-block {
@@ -699,10 +727,6 @@ body.is-booting .game-shell {
 .hud-block {
   padding: var(--space-2) var(--space-3);
   text-align: center;
-}
-
-.hud-block + .hud-block {
-  border-left: 1px solid var(--panel-edge);
 }
 
 .hud-label {
@@ -1662,6 +1686,13 @@ body.is-booting .game-shell {
   padding: var(--space-2) 0 0;
   flex-shrink: 0;
   border-top: 1px solid rgba(90, 61, 138, 0.45);
+}
+
+.records-stats {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-4);
 }
 
 .records-stat {
