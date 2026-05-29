@@ -3,15 +3,21 @@ import {
   DANCE_OPENERS,
   DANCE_RESPONSES,
   formatDanceHypeTail,
+  getFoeHypeGain,
   getPlayerHypeGain,
   pickRandomDanceOpener,
   pickRandomDanceResponse,
   resetDancePicker,
 } from "../src/content/dance-responses.js";
 
-const NO_HYPE = DANCE_RESPONSES.filter((r) => r.playerHype === 0);
-const SIDELINE_HYPE = DANCE_RESPONSES.filter(
-  (r) => r.playerHype === 1 && !r.foeJoins
+const NO_HYPE = DANCE_RESPONSES.filter(
+  (r) => getPlayerHypeGain(r) === 0 && getFoeHypeGain(r) === 0
+);
+const PLAYER_HYPE = DANCE_RESPONSES.filter(
+  (r) => getPlayerHypeGain(r) === 1 && getFoeHypeGain(r) === 0
+);
+const FOE_HYPE = DANCE_RESPONSES.filter(
+  (r) => getPlayerHypeGain(r) === 0 && getFoeHypeGain(r) === 1 && !r.foeJoins
 );
 const JOIN_HYPE = DANCE_RESPONSES.filter((r) => r.foeJoins === true);
 
@@ -20,8 +26,12 @@ describe("getPlayerHypeGain", () => {
     expect(getPlayerHypeGain({ message: "{foe} boos.", playerHype: 0 })).toBe(0);
   });
 
-  it("defaults to one when omitted", () => {
-    expect(getPlayerHypeGain({ message: "{foe} claps." })).toBe(1);
+  it("returns zero when omitted and foe does not join", () => {
+    expect(getPlayerHypeGain({ message: "{foe} claps." })).toBe(0);
+  });
+
+  it("returns one when foe joins and player hype omitted", () => {
+    expect(getPlayerHypeGain({ message: "{foe} dances.", foeJoins: true })).toBe(1);
   });
 
   it("treats zero as zero not default", () => {
@@ -29,21 +39,41 @@ describe("getPlayerHypeGain", () => {
   });
 });
 
+describe("getFoeHypeGain", () => {
+  it("returns explicit foe-only hype", () => {
+    expect(
+      getFoeHypeGain({ message: "{foe} vibes.", playerHype: 0, foeHype: 1 })
+    ).toBe(1);
+  });
+
+  it("returns one when foe joins", () => {
+    expect(getFoeHypeGain({ message: "{foe} dances.", foeJoins: true })).toBe(1);
+  });
+
+  it("returns zero for sideline player hype", () => {
+    expect(getFoeHypeGain({ message: "{foe} claps.", playerHype: 1 })).toBe(0);
+  });
+});
+
 describe("formatDanceHypeTail", () => {
-  it("is empty when player gains nothing", () => {
-    expect(formatDanceHypeTail(0, false)).toBe("");
-    expect(formatDanceHypeTail(0, true)).toBe("");
+  it("is empty when nobody gains hype", () => {
+    expect(formatDanceHypeTail(0, 0)).toBe("");
   });
 
-  it("describes solo hype with markup", () => {
-    expect(formatDanceHypeTail(1, false)).toContain("You get");
-    expect(formatDanceHypeTail(1, false)).toContain("+1 HYPE");
-    expect(formatDanceHypeTail(1, false)).toContain("battle-hype-gain");
+  it("describes solo player hype with markup", () => {
+    expect(formatDanceHypeTail(1, 0)).toContain("You get");
+    expect(formatDanceHypeTail(1, 0)).toContain("+1 HYPE");
+    expect(formatDanceHypeTail(1, 0)).toContain("battle-hype-gain");
   });
 
-  it("describes shared hype when foe joins", () => {
-    expect(formatDanceHypeTail(1, true)).toContain("You both get");
-    expect(formatDanceHypeTail(1, true)).not.toContain("You get +1");
+  it("describes foe-only hype with foe name", () => {
+    expect(formatDanceHypeTail(0, 1, "Rabid Rabbit")).toContain("Rabid Rabbit gets");
+    expect(formatDanceHypeTail(0, 1, "Rabid Rabbit")).toContain("+1 HYPE");
+  });
+
+  it("describes shared hype when both gain", () => {
+    expect(formatDanceHypeTail(1, 1)).toContain("You both get");
+    expect(formatDanceHypeTail(1, 1)).not.toContain("You get +1");
   });
 });
 
@@ -54,31 +84,44 @@ describe("dance content invariants", () => {
     }
   });
 
-  it("has three hype buckets with content", () => {
-    expect(NO_HYPE.length).toBeGreaterThan(10);
-    expect(SIDELINE_HYPE.length).toBeGreaterThan(10);
-    expect(JOIN_HYPE.length).toBeGreaterThan(10);
+  it("has four hype buckets with balanced counts", () => {
+    expect(NO_HYPE.length).toBe(17);
+    expect(PLAYER_HYPE.length).toBe(14);
+    expect(FOE_HYPE.length).toBe(8);
+    expect(JOIN_HYPE.length).toBe(14);
+    expect(
+      NO_HYPE.length + PLAYER_HYPE.length + FOE_HYPE.length + JOIN_HYPE.length
+    ).toBe(DANCE_RESPONSES.length);
   });
 
-  it("aligns hype buckets with join flag", () => {
+  it("aligns hype buckets with flags", () => {
     for (const response of DANCE_RESPONSES) {
-      const gain = getPlayerHypeGain(response);
+      const playerGain = getPlayerHypeGain(response);
+      const foeGain = getFoeHypeGain(response);
       const joins = response.foeJoins === true;
 
-      if (response.playerHype === 0) {
-        expect(gain).toBe(0);
-        expect(formatDanceHypeTail(gain, joins)).toBe("");
+      if (playerGain === 0 && foeGain === 0) {
+        expect(formatDanceHypeTail(playerGain, foeGain)).toBe("");
         expect(joins).toBe(false);
         continue;
       }
 
-      expect(gain).toBe(1);
-      expect(response.foeJoins === true).toBe(joins);
       if (joins) {
-        expect(formatDanceHypeTail(gain, true)).toContain("both");
-      } else {
-        expect(formatDanceHypeTail(gain, false)).toContain("You get");
+        expect(playerGain).toBe(1);
+        expect(foeGain).toBe(1);
+        expect(formatDanceHypeTail(playerGain, foeGain)).toContain("both");
+        continue;
       }
+
+      if (foeGain > 0 && playerGain === 0) {
+        expect(response.foeHype).toBe(1);
+        expect(formatDanceHypeTail(0, 1, "Test Foe")).toContain("Test Foe gets");
+        continue;
+      }
+
+      expect(playerGain).toBe(1);
+      expect(foeGain).toBe(0);
+      expect(formatDanceHypeTail(playerGain, foeGain)).toContain("You get");
     }
   });
 

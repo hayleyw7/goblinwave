@@ -14,7 +14,7 @@ Deploy or update hosting via [GitHub Pages](#github-pages) (Settings → Pages �
 - **100 waves** to win; **117** hand-picked alliterative foes (critters and fantasy creatures)
 - Pick any roster emoji as your hero
 - **Heal** (+3 HP) on your turn — foe may counterattack
-- **Dance** for random foe reactions and hype buffs
+- **Dance** for random foe reactions — hype for you, hype for them, both, or neither
 - **+3 HP after each wave victory** (sparkle on your critter; no battle-log line)
 - Shuffled foe order each run
 - **Scores persist** in this browser (best wave, run count)
@@ -26,7 +26,7 @@ Deploy or update hosting via [GitHub Pages](#github-pages) (Settings → Pages �
 |--------|--------|--------|
 | Attack | ⚔️ | |
 | Heal | 💚 | +3 HP; costs your turn |
-| Dance | 🕺 | Random reactions; can raise hype |
+| Dance | 🕺 | Random reactions; +1 HYPE for you, them, or both |
 | Run | 🏃 | Skip to the next wave — **not on wave 100** |
 
 ## Footer
@@ -43,7 +43,7 @@ Stored under `critterwave-v1` in the browser (migrates from older `goblinwave-*`
 - **Best** — highest wave number you’ve reached (updates when you die or beat all 100 waves)
 - **Runs** — how many runs you’ve finished (game over or full win)
 - **Hero** — emoji and name from your last run
-- **Active run** — HP, hype, current foe, wave, turn, and shuffled foe order (until game over or victory)
+- **Active run** — HP, your hype & foe hype, current foe, wave, turn, and shuffled foe order (until game over or victory)
 
 ## Project layout
 

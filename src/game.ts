@@ -18,6 +18,7 @@ import {
 import {
   formatDanceHypeTail,
   getPlayerHypeGain,
+  getFoeHypeGain,
   pickRandomDanceOpener,
   pickRandomDanceResponse,
   resetDancePicker,
@@ -777,8 +778,8 @@ function applyPlayerDanceBuff(amount = 1): void {
   hypeLevel += amount;
 }
 
-function applyFoeDanceBuff(): void {
-  foeHypeLevel += 1;
+function applyFoeDanceBuff(amount = 1): void {
+  foeHypeLevel += amount;
 }
 
 function formatHypeLabel(level: number): string {
@@ -969,11 +970,15 @@ function showDamagePop(
   window.setTimeout(() => pop.remove(), 900);
 }
 
-function showHypeGainPops(playerGain: number, foeJoins: boolean): void {
-  if (playerGain <= 0) return;
-  showDamagePop("hero", "HYPE", "hype");
-  if (foeJoins) {
-    window.setTimeout(() => showDamagePop("foe", "HYPE", "hype"), 90);
+function showHypeGainPops(playerGain: number, foeGain: number): void {
+  if (playerGain > 0) {
+    showDamagePop("hero", "HYPE", "hype");
+  }
+  if (foeGain > 0) {
+    window.setTimeout(
+      () => showDamagePop("foe", "HYPE", "hype"),
+      playerGain > 0 ? 90 : 0
+    );
   }
 }
 
@@ -1434,13 +1439,14 @@ function logDanceLines(opener: string, reactionHtml: string, tail: string): void
 async function onDance(): Promise<void> {
   const response = pickRandomDanceResponse();
   const playerGain = getPlayerHypeGain(response);
+  const foeGain = getFoeHypeGain(response);
   const joins = response.foeJoins === true;
 
   if (playerGain > 0) {
     applyPlayerDanceBuff(playerGain);
   }
-  if (joins) {
-    applyFoeDanceBuff();
+  if (foeGain > 0) {
+    applyFoeDanceBuff(foeGain);
   }
 
   const opener = escapeHtml(pickRandomDanceOpener());
@@ -1449,16 +1455,16 @@ async function onDance(): Promise<void> {
   await pause(COUNTER_ATTACK_DELAY_MS);
 
   const reaction = escapeHtml(formatFoeInText(response.message));
-  const tail = formatDanceHypeTail(playerGain, joins);
+  const tail = formatDanceHypeTail(playerGain, foeGain, foe?.name);
   logDanceLines(opener, reaction, "");
-  if (joins) {
+  if (joins || foeGain > 0) {
     playFoeDance();
   }
 
   if (tail) {
     await pause(COUNTER_ATTACK_DELAY_MS);
     logDanceLines(opener, reaction, tail);
-    showHypeGainPops(playerGain, joins);
+    showHypeGainPops(playerGain, foeGain);
     render();
   }
 

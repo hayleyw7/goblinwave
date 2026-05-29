@@ -1,11 +1,15 @@
 export type DanceResponse = {
   message: string;
+  /** Player hype gain; defaults to 1 when omitted (unless only foeHype is set). */
   playerHype?: number;
+  /** Foe hype gain without joining the dance. */
+  foeHype?: number;
+  /** Foe joins the dance — both sides get +1 hype. */
   foeJoins?: boolean;
 };
 
 export const DANCE_RESPONSES: DanceResponse[] = [
-  // No hype — foe ignores, pans, or shuts you down.
+  // No hype — foe ignores, pans, or shuts you down. (17)
   { message: "{foe} boos loudly.", playerHype: 0 },
   { message: "{foe} crosses their arms and watches silently.", playerHype: 0 },
   { message: "{foe} refuses to acknowledge your performance.", playerHype: 0 },
@@ -24,7 +28,7 @@ export const DANCE_RESPONSES: DanceResponse[] = [
   { message: "{foe} looks terrified by your moves.", playerHype: 0 },
   { message: "{foe} pretends to be a dance judge.", playerHype: 0 },
 
-  // +1 player hype — foe cheers from the sidelines but doesn't dance.
+  // +1 player hype — foe cheers but doesn't dance. (14)
   { message: "{foe} claps politely.", playerHype: 1 },
   { message: "{foe} looks confused but supportive.", playerHype: 1 },
   { message: "{foe} tosses you a shiny pebble.", playerHype: 1 },
@@ -39,10 +43,50 @@ export const DANCE_RESPONSES: DanceResponse[] = [
   { message: "{foe} weeps with joy.", playerHype: 1 },
   { message: "{foe} whispers teach me with awe.", playerHype: 1 },
   { message: "{foe} faints from sheer awesomeness.", playerHype: 1 },
-  { message: "{foe} honks a party horn once, respectfully.", playerHype: 1 },
-  { message: "{foe} throws glitter into the air.", playerHype: 1 },
 
-  // +1 each — foe joins the dance.
+  // +1 foe hype only — they feed off your dance, not you. (8)
+  {
+    message: "{foe} gets WAY too into your beat.",
+    playerHype: 0,
+    foeHype: 1,
+  },
+  {
+    message: "{foe} starts vibing. You immediately regret this.",
+    playerHype: 0,
+    foeHype: 1,
+  },
+  {
+    message: "{foe} thinks the dance-off is about them now.",
+    playerHype: 0,
+    foeHype: 1,
+  },
+  {
+    message: "{foe} hypes themselves up watching you flop.",
+    playerHype: 0,
+    foeHype: 1,
+  },
+  {
+    message: "{foe} catches the rhythm and owns the floor.",
+    playerHype: 0,
+    foeHype: 1,
+  },
+  {
+    message: "{foe} misreads your moves as a challenge—and accepts.",
+    playerHype: 0,
+    foeHype: 1,
+  },
+  {
+    message: "{foe} feeds off your energy. For themselves.",
+    playerHype: 0,
+    foeHype: 1,
+  },
+  {
+    message: "{foe} gets hyped. You get nothing.",
+    playerHype: 0,
+    foeHype: 1,
+  },
+
+  // +1 each — foe joins the dance. (14)
   { message: "{foe} starts dancing with you.", foeJoins: true, playerHype: 1 },
   { message: "{foe} starts stomping rhythmically.", foeJoins: true, playerHype: 1 },
   { message: "{foe} starts shadow dancing.", foeJoins: true, playerHype: 1 },
@@ -57,7 +101,6 @@ export const DANCE_RESPONSES: DanceResponse[] = [
   { message: "{foe} flosses. The dance. Not dental.", foeJoins: true, playerHype: 1 },
   { message: "{foe} starts a conga line of one.", foeJoins: true, playerHype: 1 },
   { message: "{foe} disco-points at the ceiling.", foeJoins: true, playerHype: 1 },
-  { message: "{foe} does the robot with suspicious fluidity.", foeJoins: true, playerHype: 1 },
 ];
 
 export const DANCE_OPENERS = [
@@ -83,24 +126,53 @@ export const DANCE_OPENERS = [
 ] as const;
 
 export function getPlayerHypeGain(response: DanceResponse): number {
-  return response.playerHype !== undefined ? response.playerHype : 1;
+  if (response.playerHype !== undefined) {
+    return response.playerHype;
+  }
+  if (response.foeJoins) {
+    return 1;
+  }
+  return 0;
+}
+
+export function getFoeHypeGain(response: DanceResponse): number {
+  if (response.foeHype !== undefined) {
+    return response.foeHype;
+  }
+  if (response.foeJoins) {
+    return 1;
+  }
+  return 0;
 }
 
 function formatDanceHypeGain(gain: number): string {
   return `<span class="battle-hype-gain">+${gain} HYPE</span>`;
 }
 
+function escapeHtml(text: string): string {
+  return text
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
 export function formatDanceHypeTail(
   playerGain: number,
-  foeJoins: boolean
+  foeGain: number,
+  foeName?: string
 ): string {
-  if (playerGain === 0) {
+  if (playerGain === 0 && foeGain === 0) {
     return "";
   }
-  if (foeJoins) {
+  if (playerGain > 0 && foeGain > 0) {
     return `You both get ${formatDanceHypeGain(1)}!`;
   }
-  return `You get ${formatDanceHypeGain(1)}!`;
+  if (foeGain > 0) {
+    const label = foeName ? escapeHtml(foeName) : "They";
+    return `${label} gets ${formatDanceHypeGain(foeGain)}!`;
+  }
+  return `You get ${formatDanceHypeGain(playerGain)}!`;
 }
 
 let lastDanceResponseIndex = -1;
