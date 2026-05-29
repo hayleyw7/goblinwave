@@ -134,8 +134,8 @@ const LEGACY_STORAGE_KEYS = ["goblinwave-v4", "goblinwave-v1"] as const;
 const CAMPAIGN_WAVES = CAMPAIGN_WAVE_COUNT;
 const FOE_POOF_MS = 450;
 const FOE_ENTRANCE_MS = 550;
-/** Foe counter damage pop + hit react, after your attack/heal visuals. */
-const COUNTER_HIT_VISUAL_DELAY_MS = 200;
+/** Foe counter / dance follow-up after your attack, heal, or dance. */
+const FOE_FOLLOW_UP_DELAY_MS = 200;
 const DEATH_BEAT_MS = 1200;
 const GOLD_FLASH_MS = 650;
 const HEAL_ANIM_MS = 420;
@@ -1002,18 +1002,6 @@ function showDamagePop(
   window.setTimeout(() => pop.remove(), 900);
 }
 
-function showHypeGainPops(playerGain: number, foeGain: number): void {
-  if (playerGain > 0) {
-    showDamagePop("hero", "HYPE", "hype");
-  }
-  if (foeGain > 0) {
-    window.setTimeout(
-      () => showDamagePop("foe", "HYPE", "hype"),
-      playerGain > 0 ? 90 : 0
-    );
-  }
-}
-
 const LEVEL_UP_NOTICE_MS = 1800;
 
 function playLevelUpNotice(): Promise<void> {
@@ -1463,7 +1451,30 @@ function scheduleFoeCounterHitVisuals(hit: number, generation: number): void {
       return;
     }
     finishCombatAction(generation);
-  }, COUNTER_HIT_VISUAL_DELAY_MS);
+  }, FOE_FOLLOW_UP_DELAY_MS);
+}
+
+function scheduleFoeDanceFollowUp(
+  generation: number,
+  opts: { foeDances: boolean; foeGain: number; foeCapped: boolean }
+): void {
+  const delay = opts.foeDances ? FOE_FOLLOW_UP_DELAY_MS : 0;
+  window.setTimeout(() => {
+    if (generation !== combatActionGeneration || phase !== "combat") {
+      finishCombatAction(generation);
+      return;
+    }
+    if (opts.foeDances) {
+      playFoeDance();
+    }
+    if (opts.foeGain > 0) {
+      showDamagePop("foe", "HYPE", "hype");
+    }
+    if (opts.foeCapped) {
+      briefClass(el.foeHypeWrap, "hype-capped-flash", 420);
+    }
+    finishCombatAction(generation);
+  }, delay);
 }
 
 function onAttack(): void {
@@ -1593,26 +1604,26 @@ function onDance(): void {
   });
 
   playHeroDance();
-  if (joins || attemptedFoeGain > 0) {
-    playFoeDance();
-  }
-
   logDanceLines(opener, reaction, tail);
 
+  const foeDances = joins || attemptedFoeGain > 0;
   if (tail) {
-    showHypeGainPops(actualPlayerGain, actualFoeGain);
+    if (actualPlayerGain > 0) {
+      showDamagePop("hero", "HYPE", "hype");
+    }
     if (playerCapped) {
       briefClass(el.playerHypeWrap, "hype-capped-flash", 420);
-    }
-    if (foeCapped) {
-      briefClass(el.foeHypeWrap, "hype-capped-flash", 420);
     }
   }
 
   turn += 1;
   render();
   persist();
-  finishCombatAction(generation);
+  scheduleFoeDanceFollowUp(generation, {
+    foeDances,
+    foeGain: actualFoeGain,
+    foeCapped,
+  });
 }
 
 function onRun(): void {
