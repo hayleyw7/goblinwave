@@ -948,6 +948,32 @@ function winCampaign() {
     persist();
     render();
 }
+function hasDebugWin() {
+    return new URLSearchParams(window.location.search).get("debug") === "win";
+}
+function triggerDebugWin() {
+    hideSetup();
+    actionsLocked = false;
+    if (!player.emoji) {
+        const first = HEROES[0];
+        applyHeroChoice(first.emoji, first.label);
+        applyHeroColorTheme(resolveHeroColorTheme(loadSave()));
+    }
+    wave = getCampaignLength();
+    clearLog();
+    winCampaign();
+}
+function mountDebugHooks() {
+    window.critterwave = { win: triggerDebugWin };
+    console.info("[critterwave] Debug: critterwave.win() — or load with ?debug=win");
+}
+function maybeRunDebugWin() {
+    if (!hasDebugWin()) {
+        return;
+    }
+    mountDebugHooks();
+    triggerDebugWin();
+}
 async function winWave() {
     if (!foe)
         return;
@@ -1318,11 +1344,13 @@ function init() {
     if (!save.playerEmoji) {
         showSetup();
         finishBoot();
+        maybeRunDebugWin();
         return;
     }
     applyHeroChoice(save.playerEmoji, resolveSavedHeroName(save, save.playerEmoji));
     applyHeroColorTheme(resolveHeroColorTheme(save));
     beginGame();
     finishBoot();
+    maybeRunDebugWin();
 }
 init();

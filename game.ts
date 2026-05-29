@@ -27,6 +27,13 @@ import {
   startVictoryCelebration,
   stopVictoryCelebration,
 } from "./victory-celebration.js";
+
+declare global {
+  interface Window {
+    critterwave?: { win: () => void };
+  }
+}
+
 type Player = {
   name: string;
   hp: number;
@@ -1224,6 +1231,40 @@ function winCampaign(): void {
   render();
 }
 
+function hasDebugWin(): boolean {
+  return new URLSearchParams(window.location.search).get("debug") === "win";
+}
+
+function triggerDebugWin(): void {
+  hideSetup();
+  actionsLocked = false;
+
+  if (!player.emoji) {
+    const first = HEROES[0]!;
+    applyHeroChoice(first.emoji, first.label);
+    applyHeroColorTheme(resolveHeroColorTheme(loadSave()));
+  }
+
+  wave = getCampaignLength();
+  clearLog();
+  winCampaign();
+}
+
+function mountDebugHooks(): void {
+  window.critterwave = { win: triggerDebugWin };
+  console.info(
+    "[critterwave] Debug: critterwave.win() — or load with ?debug=win"
+  );
+}
+
+function maybeRunDebugWin(): void {
+  if (!hasDebugWin()) {
+    return;
+  }
+  mountDebugHooks();
+  triggerDebugWin();
+}
+
 async function winWave(): Promise<void> {
   if (!foe) return;
 
@@ -1657,6 +1698,7 @@ function init(): void {
   if (!save.playerEmoji) {
     showSetup();
     finishBoot();
+    maybeRunDebugWin();
     return;
   }
 
@@ -1667,6 +1709,7 @@ function init(): void {
   applyHeroColorTheme(resolveHeroColorTheme(save));
   beginGame();
   finishBoot();
+  maybeRunDebugWin();
 }
 
 init();
