@@ -21,6 +21,7 @@ import {
   pickFoeFromOrder,
   pickFoeTemplateIndex,
   randomDamage,
+  randomHeal,
   restoreFoeOrder,
   scaleFoeAttack,
   scaleFoeHp,
@@ -216,6 +217,11 @@ describe("combat math", () => {
   it("rolls damage between 1 and max inclusive", () => {
     expect(randomDamage(5, () => 0)).toBe(1);
     expect(randomDamage(5, () => 0.99)).toBe(5);
+  });
+
+  it("rolls heal between 1 and max inclusive", () => {
+    expect(randomHeal(3, () => 0)).toBe(1);
+    expect(randomHeal(3, () => 0.99)).toBe(3);
   });
 
   it("rejects invalid damage max", () => {

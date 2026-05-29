@@ -14,6 +14,8 @@ import {
   heroLabelFromFoeName,
   normalizeHeroName,
   restoreFoeOrder as restoreFoeOrderForHero,
+  randomDamage,
+  randomHeal,
 } from "./lib/game-logic.js";
 import {
   formatDanceHypeTail,
@@ -125,7 +127,7 @@ const GOLD_FLASH_MS = 650;
 const KILL_KNOCKBACK_SETTLE_MS = 180;
 const DEFEAT_TEXT_BEAT_MS = 450;
 const HEAL_ANIM_MS = 420;
-const HEAL_AMOUNT = 3;
+const HEAL_MAX = 3;
 const DANCE_ANIM_MS = 550;
 const DEFAULT_HERO_EMOJI = "🐱";
 const DEFAULT_HERO_LABEL = "Cat";
@@ -1084,8 +1086,12 @@ function makeFoeForWave(w: number): Enemy {
   return buildWaveFoe(foeOrder, w);
 }
 
-function randomDamage(max: number): number {
-  return Math.floor(Math.random() * max) + 1;
+function rollDamage(max: number): number {
+  return randomDamage(max, Math.random);
+}
+
+function rollHeal(max: number): number {
+  return randomHeal(max, Math.random);
 }
 
 function nextDefeatVerb(): string {
@@ -1244,7 +1250,7 @@ function playHitExchange(
 function resolveFoeCounterAttack(): number | null {
   if (!foe || foe.hp <= 0) return null;
 
-  const hit = randomDamage(getEffectiveFoeAttack());
+  const hit = rollDamage(getEffectiveFoeAttack());
   player.hp = Math.max(0, player.hp - hit);
   applyPlayerHitHypeLoss();
   const died = player.hp <= 0;
@@ -1274,7 +1280,7 @@ async function withActionLock(fn: () => void | Promise<void>): Promise<void> {
 async function onAttack(): Promise<void> {
   if (!foe) return;
 
-  const hit = randomDamage(getEffectiveAttack());
+  const hit = rollDamage(getEffectiveAttack());
   foe.hp = Math.max(0, foe.hp - hit);
   const foeKilled = foe.hp <= 0;
   showDamagePop("foe", `-${hit}`, "damage");
@@ -1317,7 +1323,8 @@ async function onAttack(): Promise<void> {
 
 async function applyWaveVictoryHeal(): Promise<number> {
   const before = player.hp;
-  player.hp = Math.min(player.maxHp, player.hp + HEAL_AMOUNT);
+  const heal = rollHeal(HEAL_MAX);
+  player.hp = Math.min(player.maxHp, player.hp + heal);
   const gained = player.hp - before;
   if (gained <= 0) {
     return 0;
@@ -1330,7 +1337,7 @@ async function applyWaveVictoryHeal(): Promise<number> {
 }
 
 async function onHeal(): Promise<void> {
-  const heal = HEAL_AMOUNT;
+  const heal = rollHeal(HEAL_MAX);
   player.hp = Math.min(player.maxHp, player.hp + heal);
   showDamagePop("hero", `+${heal}`, "heal");
   render();

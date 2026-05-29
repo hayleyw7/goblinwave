@@ -189,6 +189,10 @@ export function randomDamage(max: number, random: () => number): number {
   return Math.floor(random() * max) + 1;
 }
 
+export function randomHeal(max: number, random: () => number): number {
+  return randomDamage(max, random);
+}
+
 export function hypeAttackBonus(hypeLevel: number): number {
   return Math.max(0, hypeLevel) * HYPE_ATTACK_PER_LEVEL;
 }
