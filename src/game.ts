@@ -254,6 +254,7 @@ const el = {
   foePanel: document.getElementById("foe-panel")!,
   foeStatus: document.querySelector("#foe-panel .enemy-status") as HTMLElement,
   damageLayer: document.getElementById("damage-layer")!,
+  heroLevelUpLayer: document.getElementById("hero-level-up-layer")!,
   xpBar: document.getElementById("xp-bar")!,
   xpFill: document.getElementById("xp-fill")!,
   xpText: document.getElementById("xp-text")!,
@@ -974,25 +975,10 @@ function spritePopAnchor(side: "hero" | "foe"): { left: string; top: string } {
   return { left: `${centerX}%`, top: `${anchorY}%` };
 }
 
-function heroHpPopAnchor(): { left: string; top: string } {
-  const hpWrap = el.playerPanel.querySelector(".hero-hp-wrap");
-  const layerRect = el.damageLayer.getBoundingClientRect();
-  if (!hpWrap || layerRect.width <= 0 || layerRect.height <= 0) {
-    return { left: "22%", top: "58%" };
-  }
-  const wrapRect = hpWrap.getBoundingClientRect();
-  const centerX =
-    ((wrapRect.left + wrapRect.width / 2 - layerRect.left) / layerRect.width) * 100;
-  const gapAbove = 28;
-  const anchorY =
-    ((wrapRect.top - gapAbove - layerRect.top) / layerRect.height) * 100;
-  return { left: `${centerX}%`, top: `${anchorY}%` };
-}
-
 function showDamagePop(
   side: "hero" | "foe",
   text: string,
-  kind: "damage" | "heal" | "hype" | "level",
+  kind: "damage" | "heal" | "hype",
   anchorOverride?: { left: string; top: string }
 ): void {
   const pop = document.createElement("span");
@@ -1001,9 +987,7 @@ function showDamagePop(
       ? "damage-pop heal-pop"
       : kind === "hype"
         ? "damage-pop hype-pop"
-        : kind === "level"
-          ? "damage-pop hype-pop"
-          : "damage-pop";
+        : "damage-pop";
   pop.textContent = text;
   const anchor = anchorOverride ?? spritePopAnchor(side);
   pop.style.left = anchor.left;
@@ -1025,12 +1009,22 @@ function showHypeGainPops(playerGain: number, foeGain: number): void {
   }
 }
 
-const LEVEL_UP_NOTICE_MS = 900;
+const LEVEL_UP_NOTICE_MS = 1800;
 
 function playLevelUpNotice(): Promise<void> {
   return new Promise((resolve) => {
-    showDamagePop("hero", "LEVEL UP", "hype", heroHpPopAnchor());
-    window.setTimeout(resolve, LEVEL_UP_NOTICE_MS);
+    const pop = document.createElement("span");
+    pop.className = "level-up-pop";
+    pop.textContent = "LEVEL UP";
+    pop.setAttribute("role", "status");
+    el.heroLevelUpLayer.setAttribute("aria-hidden", "false");
+    el.heroLevelUpLayer.appendChild(pop);
+    void pop.offsetWidth;
+    window.setTimeout(() => {
+      pop.remove();
+      el.heroLevelUpLayer.setAttribute("aria-hidden", "true");
+      resolve();
+    }, LEVEL_UP_NOTICE_MS);
   });
 }
 

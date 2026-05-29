@@ -257,6 +257,12 @@ describe("formatFoeInText", () => {
 });
 
 describe("defeat verbs", () => {
+  it("uses beat not the old best typo", () => {
+    expect(DEFEAT_VERBS).toContain("beat");
+    expect(DEFEAT_VERBS).not.toContain("best");
+    expect(DEFEAT_VERBS).not.toContain("bested");
+  });
+
   it("cycles through verbs", () => {
     let index = 0;
     const first = nextDefeatVerb(index);
