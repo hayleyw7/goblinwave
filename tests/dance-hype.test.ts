@@ -7,7 +7,7 @@ import {
   pickRandomDanceOpener,
   pickRandomDanceResponse,
   resetDancePicker,
-} from "../dance-responses.js";
+} from "../src/content/dance-responses.js";
 
 const NO_HYPE = DANCE_RESPONSES.filter((r) => r.playerHype === 0);
 const SIDELINE_HYPE = DANCE_RESPONSES.filter(

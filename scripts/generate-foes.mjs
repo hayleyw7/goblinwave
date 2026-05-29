@@ -1,12 +1,15 @@
 #!/usr/bin/env node
 /**
- * Validates foes-data.ts — sound-matched alliteration for every foe (critters + fantasy).
+ * Validates src/data/foes-data.ts — sound-matched alliteration for every foe.
  * Run: npm run build && npm run generate-foes
  */
 import { readFileSync } from "fs";
-import { assertAlliterativeName } from "../alliteration.js";
+import { assertAlliterativeName } from "../js/lib/alliteration.js";
 
-const src = readFileSync(new URL("../foes-data.ts", import.meta.url), "utf8");
+const src = readFileSync(
+  new URL("../src/data/foes-data.ts", import.meta.url),
+  "utf8"
+);
 const foes = JSON.parse(src.match(/export const FOES = (\[[\s\S]*?\]) as const;/)[1]);
 
 const emojis = new Set();

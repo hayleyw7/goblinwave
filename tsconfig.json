@@ -4,15 +4,9 @@
     "module": "ES2020",
     "moduleResolution": "bundler",
     "strict": true,
-    "lib": ["ES2020", "DOM"]
+    "lib": ["ES2020", "DOM"],
+    "rootDir": "src",
+    "outDir": "js"
   },
-  "files": [
-    "game.ts",
-    "foes-data.ts",
-    "alliteration.ts",
-    "hero-groups.ts",
-    "dance-responses.ts",
-    "game-logic.ts",
-    "victory-celebration.ts"
-  ]
+  "include": ["src/**/*.ts"]
 }

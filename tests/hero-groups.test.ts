@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { FOES } from "../foes-data.js";
+import { FOES } from "../src/data/foes-data.js";
 import {
   assertHeroPickerOrderCovers,
   HERO_PICKER_ORDER,
   heroPickerOrderIndex,
-} from "../hero-groups.js";
+} from "../src/lib/hero-groups.js";
 
 describe("HERO_PICKER_ORDER", () => {
   it("has no duplicate emojis", () => {

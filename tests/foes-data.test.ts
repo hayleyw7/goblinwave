@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { assertAlliterativeName } from "../alliteration.js";
-import { FOES } from "../foes-data.js";
-import { heroLabelFromFoeName } from "../game-logic.js";
-import { assertHeroPickerOrderCovers } from "../hero-groups.js";
+import { assertAlliterativeName } from "../src/lib/alliteration.js";
+import { FOES } from "../src/data/foes-data.js";
+import { heroLabelFromFoeName } from "../src/lib/game-logic.js";
+import { assertHeroPickerOrderCovers } from "../src/lib/hero-groups.js";
 
 describe("foes roster", () => {
   it("has unique emojis and ids", () => {

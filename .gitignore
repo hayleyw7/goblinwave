@@ -1,4 +1,6 @@
 node_modules/
+js/
 test-results/
 playwright-report/
 playwright/.cache/
+og-tmp-base.png

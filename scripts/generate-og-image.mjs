@@ -5,7 +5,7 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const previewUrl = pathToFileURL(join(root, "scripts/og-preview.html")).href;
-const outPath = join(root, "og-image.png");
+const outPath = join(root, "images/og-image.png");
 
 const browser = await chromium.launch();
 const page = await browser.newPage({

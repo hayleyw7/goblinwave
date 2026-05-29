@@ -1,5 +1,5 @@
-import { FOES as FOES_RAW } from "./foes-data.js";
-import { assertAlliterativeName } from "./alliteration.js";
+import { FOES as FOES_RAW } from "./data/foes-data.js";
+import { assertAlliterativeName } from "./lib/alliteration.js";
 import {
   buildFoeOrder as buildFoeOrderForHero,
   CAMPAIGN_WAVE_COUNT,
@@ -14,19 +14,19 @@ import {
   heroLabelFromFoeName,
   normalizeHeroName,
   restoreFoeOrder as restoreFoeOrderForHero,
-} from "./game-logic.js";
+} from "./lib/game-logic.js";
 import {
   formatDanceHypeTail,
   getPlayerHypeGain,
   pickRandomDanceOpener,
   pickRandomDanceResponse,
   resetDancePicker,
-} from "./dance-responses.js";
-import { assertHeroPickerOrderCovers, heroPickerOrderIndex } from "./hero-groups.js";
+} from "./content/dance-responses.js";
+import { assertHeroPickerOrderCovers, heroPickerOrderIndex } from "./lib/hero-groups.js";
 import {
   startVictoryCelebration,
   stopVictoryCelebration,
-} from "./victory-celebration.js";
+} from "./ui/victory-celebration.js";
 
 declare global {
   interface Window {

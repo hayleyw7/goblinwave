@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { FOES } from "../foes-data.js";
+import { FOES } from "../src/data/foes-data.js";
 import {
   buildFoeOrder,
   CAMPAIGN_WAVE_COUNT,
@@ -25,7 +25,7 @@ import {
   scaleFoeAttack,
   scaleFoeHp,
   shuffleArray,
-} from "../game-logic.js";
+} from "../src/lib/game-logic.js";
 
 const SAMPLE_FOES = [
   { id: "a", name: "Angry Ant", emoji: "🐜", baseHp: 8, baseAtk: 2 },

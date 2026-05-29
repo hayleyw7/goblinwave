@@ -43,6 +43,28 @@ Stored under `critterwave-v1` in the browser (migrates from older `goblinwave-*`
 - **Hero** — emoji and name from your last run
 - **Active run** — HP, hype, current foe, wave, turn, and shuffled foe order (until game over or victory)
 
+## Project layout
+
+```
+index.html          # entry page
+site.webmanifest
+src/                # TypeScript source
+  game.ts           # main game
+  lib/              # rules, alliteration, hero picker order
+  data/             # foe roster
+  content/          # dance lines
+  ui/               # victory celebration
+js/                 # compiled output (npm run build — gitignored)
+css/styles.css
+icons/              # favicons & PWA icons
+images/             # og-image.png (social preview)
+assets/goblins/     # legacy placeholder art
+scripts/            # generate-foes, generate:og
+tests/              # Vitest unit tests
+e2e/                # Playwright browser tests
+.github/workflows/  # deploy + CI
+```
+
 ## Local play
 
 ```bash
@@ -65,7 +87,7 @@ npm run test:e2e      # browser tests (downloads Chromium if needed, then runs)
 
 ## GitHub Pages
 
-This project uses **plain TypeScript** (`tsc`) — no bundler. `npm run build` compiles `.ts` → `.js` next to the source files; the browser loads `game.js` as an ES module from `index.html`.
+This project uses **plain TypeScript** (`tsc`) — no bundler. `npm run build` compiles `src/**/*.ts` → `js/`; the browser loads `js/game.js` from `index.html`.
 
 Hosting is automated by [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml).
 
@@ -90,7 +112,7 @@ For a project repo named `critterwave`:
 
 ```bash
 npm install
-npm run build   # compiles TypeScript — commit the updated .js files if you changed .ts
+npm run build   # src/ → js/
 npm run dev     # http://localhost:3000
 ```
 
@@ -98,6 +120,6 @@ npm run dev     # http://localhost:3000
 
 - **No Vite/Webpack required** — `tsc` is enough for this app.
 - **No `gh-pages` branch** — the Actions workflow deploys for you.
-- **No separate `dist/` folder** — build output lives beside the `.ts` files (`game.js`, `foes-data.js`, …).
+- **No bundler `dist/` folder** — output goes to `js/` at the repo root.
 
-After the first successful deploy, link previews may need absolute image URLs (`og:image`) — use your full Pages URL + `/og-image.png` if Discord/iMessage show a broken preview.
+After the first successful deploy, link previews may need absolute image URLs (`og:image`) — use your full Pages URL + `/images/og-image.png` if Discord/iMessage show a broken preview.

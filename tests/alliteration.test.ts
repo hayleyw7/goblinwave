@@ -3,7 +3,7 @@ import {
   assertAlliterativeName,
   initialSoundCluster,
   isAlliterativeName,
-} from "../alliteration.js";
+} from "../src/lib/alliteration.js";
 
 describe("initialSoundCluster", () => {
   it("matches multi-letter clusters before single letters", () => {
