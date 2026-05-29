@@ -1194,6 +1194,10 @@ body.is-booting .game-shell {
   display: block;
 }
 
+.battle-line.battle-info {
+  color: #fff;
+}
+
 .battle-text.battle-player,
 .battle-line.battle-player {
   color: var(--hero);

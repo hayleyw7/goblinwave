@@ -450,7 +450,7 @@ export const FOES = [
     },
     {
         "id": "posh-peacock",
-        "name": "Picky Peacock",
+        "name": "Perilous Peacock",
         "emoji": "🦚",
         "baseHp": 11,
         "baseAtk": 3

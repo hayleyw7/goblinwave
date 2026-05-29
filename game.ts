@@ -1690,7 +1690,13 @@ function beginGame(): void {
   if (snapshot && snapshot.phase === "combat" && snapshot.foe) {
     applySnapshot(snapshot);
     clearLog();
-    logLine("Welcome back — your run was restored.", "info");
+    logBattleLines(
+      { text: "Welcome back — your run was restored.", kind: "info" },
+      {
+        text: `It's your turn against ${foe!.name}!`,
+        kind: "player",
+      }
+    );
     render();
     persist();
     return;
