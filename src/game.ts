@@ -243,6 +243,11 @@ let pendingHeroColorTheme: HeroColorTheme = DEFAULT_HERO_COLOR_THEME;
 let foeColorTheme: FoeColorTheme = "amber";
 let lastFoeColorTheme: FoeColorTheme | null = null;
 let defeatVerbIndex = 0;
+/** Blocks combat buttons during counters, run, wave change, death anim, etc. */
+let combatBusy = false;
+let combatActionGeneration = 0;
+/** After attack/heal until foe counter finishes — one hero strike per foe response. */
+let awaitingFoeResponse = false;
 /** Keep showing the fleeing foe until exit poof finishes (run away). */
 let suppressFoePanelRender = false;
 
@@ -1143,6 +1148,34 @@ function pause(ms: number): Promise<void> {
   return new Promise((resolve) => window.setTimeout(resolve, ms));
 }
 
+function canUseCombatActions(): boolean {
+  return (
+    phase === "combat" &&
+    !combatBusy &&
+    !awaitingFoeResponse &&
+    player.hp > 0 &&
+    foe !== null
+  );
+}
+
+/** Returns action generation id when locked; null if actions are not allowed. */
+function lockCombat(): number | null {
+  if (!canUseCombatActions()) {
+    return null;
+  }
+  combatBusy = true;
+  combatActionGeneration += 1;
+  return combatActionGeneration;
+}
+
+function finishCombatAction(generation: number): void {
+  if (generation !== combatActionGeneration) {
+    return;
+  }
+  awaitingFoeResponse = false;
+  combatBusy = false;
+}
+
 function playNextFoeReveal(
   primary: { text: string; kind: "player" },
   secondary: { text: string; kind: "foe" }
@@ -1298,6 +1331,9 @@ function updateRecordsOnVictory(): void {
 
 function endGame(): void {
   stopVictoryCelebration(el.victoryEmojiLayer);
+  combatBusy = true;
+  awaitingFoeResponse = true;
+  combatActionGeneration += 1;
   phase = "gameover";
   clearAllHype();
   logLine("You lose! Game over.", "lose");
@@ -1307,6 +1343,9 @@ function endGame(): void {
 }
 
 function winCampaign(): void {
+  combatBusy = true;
+  awaitingFoeResponse = true;
+  combatActionGeneration += 1;
   phase = "victory";
   clearAllHype();
   logLine(`Wave ${CAMPAIGN_WAVES} cleared! Total victory!`, "win");
@@ -1411,52 +1450,65 @@ function playFoeCounterHitVisuals(hit: number, fatal: boolean): void {
   playHitExchange("foe", "hero", fatal);
 }
 
-function scheduleFoeCounterHitVisuals(hit: number): void {
+function scheduleFoeCounterHitVisuals(hit: number, generation: number): void {
   const fatal = player.hp <= 0;
   window.setTimeout(() => {
-    if (phase !== "combat" && !fatal) return;
+    if (generation !== combatActionGeneration || phase !== "combat") {
+      finishCombatAction(generation);
+      return;
+    }
     playFoeCounterHitVisuals(hit, fatal);
     if (fatal) {
-      void handlePlayerDeath();
+      void handlePlayerDeath().finally(() => finishCombatAction(generation));
+      return;
     }
+    finishCombatAction(generation);
   }, COUNTER_HIT_VISUAL_DELAY_MS);
 }
 
 function onAttack(): void {
-  if (!foe || phase !== "combat") return;
+  const generation = lockCombat();
+  if (generation === null) return;
+  const currentFoe = foe!;
 
   const hit = rollDamage(getEffectiveAttack());
-  foe.hp = Math.max(0, foe.hp - hit);
-  const foeKilled = foe.hp <= 0;
+  currentFoe.hp = Math.max(0, currentFoe.hp - hit);
+  const foeKilled = currentFoe.hp <= 0;
   showDamagePop("foe", `-${hit}`, "damage");
   playHitExchange("hero", "foe", foeKilled);
 
   if (foeKilled) {
     const defeatVerb = nextDefeatVerb();
-    logLine(`You ${defeatVerb} ${foe.name},`, "player");
+    logLine(`You ${defeatVerb} ${currentFoe.name},`, "player");
     render();
     const isFinal = wave >= getCampaignLength();
-    void playFoeDefeat(isFinal).then(() => {
-      if (isFinal) {
-        applyWaveVictoryHeal();
-        winCampaign();
-      } else {
-        void winWave(defeatVerb);
-      }
-    });
+    void playFoeDefeat(isFinal)
+      .then(() => {
+        if (isFinal) {
+          applyWaveVictoryHeal();
+          winCampaign();
+        } else {
+          return winWave(defeatVerb);
+        }
+      })
+      .finally(() => finishCombatAction(generation));
     return;
   }
 
+  awaitingFoeResponse = true;
   const counterHit = applyFoeCounterAttack();
-  if (counterHit === null) return;
+  if (counterHit === null) {
+    finishCombatAction(generation);
+    return;
+  }
 
   logBattleLines(
-    { text: `You hit ${foe.name} for ${hit} damage.`, kind: "player" },
-    { text: `${foe.name} hits you for ${counterHit} damage.`, kind: "foe" }
+    { text: `You hit ${currentFoe.name} for ${hit} damage.`, kind: "player" },
+    { text: `${currentFoe.name} hits you for ${counterHit} damage.`, kind: "foe" }
   );
   render();
   persist();
-  scheduleFoeCounterHitVisuals(counterHit);
+  scheduleFoeCounterHitVisuals(counterHit, generation);
 }
 
 function applyWaveVictoryHeal(): void {
@@ -1472,23 +1524,29 @@ function applyWaveVictoryHeal(): void {
 }
 
 function onHeal(): void {
-  if (!foe || phase !== "combat") return;
+  const generation = lockCombat();
+  if (generation === null) return;
+  const currentFoe = foe!;
 
   const heal = rollHeal(getHealMax());
   player.hp = Math.min(player.maxHp, player.hp + heal);
   showDamagePop("hero", `+${heal}`, "heal");
   void playHeroHeal();
 
+  awaitingFoeResponse = true;
   const counterHit = applyFoeCounterAttack();
-  if (counterHit === null) return;
+  if (counterHit === null) {
+    finishCombatAction(generation);
+    return;
+  }
 
   logBattleLines(
     { text: `You healed yourself for ${heal} HP.`, kind: "player" },
-    { text: `${foe.name} hits you for ${counterHit} damage.`, kind: "foe" }
+    { text: `${currentFoe.name} hits you for ${counterHit} damage.`, kind: "foe" }
   );
   render();
   persist();
-  scheduleFoeCounterHitVisuals(counterHit);
+  scheduleFoeCounterHitVisuals(counterHit, generation);
 }
 
 function logDanceLines(opener: string, reactionHtml: string, tail: string): void {
@@ -1505,7 +1563,9 @@ function logDanceLines(opener: string, reactionHtml: string, tail: string): void
 }
 
 function onDance(): void {
-  if (!foe || phase !== "combat") return;
+  const generation = lockCombat();
+  if (generation === null) return;
+  const currentFoe = foe!;
 
   const response = pickRandomDanceResponse();
   const attemptedPlayerGain = getPlayerHypeGain(response);
@@ -1527,7 +1587,7 @@ function onDance(): void {
 
   const opener = escapeHtml(pickRandomDanceOpener());
   const reaction = escapeHtml(formatFoeInText(response.message));
-  const tail = formatDanceHypeTail(actualPlayerGain, actualFoeGain, foe.name, {
+  const tail = formatDanceHypeTail(actualPlayerGain, actualFoeGain, currentFoe.name, {
     playerCapped,
     foeCapped,
   });
@@ -1552,20 +1612,26 @@ function onDance(): void {
   turn += 1;
   render();
   persist();
+  finishCombatAction(generation);
 }
 
 function onRun(): void {
-  if (!foe || phase !== "combat") return;
+  const generation = lockCombat();
+  if (generation === null) return;
+  const currentFoe = foe!;
 
   if (wave >= getCampaignLength()) {
     logLine("No fleeing the final foe!", "info");
+    finishCombatAction(generation);
     return;
   }
 
   clearAllHype();
-  const fledFoe = foe.name;
+  const fledFoe = currentFoe.name;
   const exitAnimPromise = playRunExit();
-  void transitionToNextWave(fledFoe, "flee", "run", exitAnimPromise);
+  void transitionToNextWave(fledFoe, "flee", "run", exitAnimPromise).finally(() =>
+    finishCombatAction(generation)
+  );
 }
 
 function applyHeroChoice(emoji: string, label: string): void {
@@ -1660,6 +1726,9 @@ function resetGame(): void {
   lastFoeColorTheme = null;
   resetDancePicker();
   phase = "combat";
+  combatBusy = false;
+  awaitingFoeResponse = false;
+  combatActionGeneration += 1;
   clearCombatAnimations();
   stopVictoryCelebration(el.victoryEmojiLayer);
   el.gameOver.classList.add("hidden");
@@ -1718,7 +1787,7 @@ function bindActions(): void {
     if (!target) return;
 
     const action = target.dataset.action;
-    if (phase !== "combat") return;
+    if (!canUseCombatActions()) return;
 
     switch (action) {
       case "attack":
