@@ -744,6 +744,9 @@ function clearAllHype() {
     hypeLevel = 0;
     foeHypeLevel = 0;
 }
+function applyPlayerHitHypeLoss() {
+    hypeLevel = Math.max(0, hypeLevel - 1);
+}
 function foeDisplayName() {
     return foe?.name ?? "foe";
 }
@@ -777,9 +780,19 @@ function playStageClass(className, ms) {
     });
 }
 function clearCombatAnimations() {
-    el.playerPanel.classList.remove("hero-death", "hero-death-knockback", "hero-knockback", "hero-victory-wobble", "hero-heal", "hero-dance", "hero-run-out", "hero-run-in");
-    el.foePanel.classList.remove("foe-poof", "foe-enter", "foe-knockback", "foe-dance", "foe-sprite-hidden");
+    el.playerPanel.classList.remove("hero-death", "hero-death-knockback", "hero-victory-wobble", "hero-heal", "hero-dance", "hero-run-out", "hero-run-in");
+    el.foePanel.classList.remove("foe-poof", "foe-enter", "foe-dance", "foe-sprite-hidden");
+    clearHitReact(el.playerPanel);
+    clearHitReact(el.foePanel);
     el.battleStage.classList.remove("stage-death-vignette", "stage-flash-gold");
+}
+function clearHitReact(panel) {
+    panel
+        .querySelector(".emoji-stack")
+        ?.classList.remove("hero-took-hit", "hero-took-hit-fatal", "foe-took-hit", "foe-took-hit-fatal", "hero-lunge", "foe-lunge");
+    panel
+        .querySelector(".hit-mark")
+        ?.classList.remove("hit-mark-active", "hit-mark-active-kill");
 }
 function playHeroHeal() {
     briefClass(el.playerPanel, "hero-heal", HEAL_ANIM_MS);
@@ -1059,25 +1072,36 @@ async function winWave() {
     }
     await transitionToNextWave(defeatedFoe, "defeat", "foe");
 }
-function playHitKnockback(victim, fatal = false) {
-    const panel = victim === "hero" ? el.playerPanel : el.foePanel;
-    let knockClass;
-    if (victim === "hero") {
-        knockClass = fatal ? "hero-death-knockback" : "hero-knockback";
-    }
-    else {
-        knockClass = fatal ? "foe-knockback-kill" : "foe-knockback";
-    }
-    briefClass(panel, knockClass, fatal ? 450 : 400);
+function playHitExchange(attacker, victim, fatal = false) {
+    const attackerPanel = attacker === "hero" ? el.playerPanel : el.foePanel;
+    const victimPanel = victim === "hero" ? el.playerPanel : el.foePanel;
+    const attackerStack = attackerPanel.querySelector(".emoji-stack");
+    const victimStack = victimPanel.querySelector(".emoji-stack");
+    const victimMark = victimPanel.querySelector(".hit-mark");
+    if (!attackerStack || !victimStack || !victimMark)
+        return;
+    const ms = fatal ? 450 : 400;
+    const lungeClass = attacker === "hero" ? "hero-lunge" : "foe-lunge";
+    const hitClass = victim === "hero"
+        ? fatal
+            ? "hero-took-hit-fatal"
+            : "hero-took-hit"
+        : fatal
+            ? "foe-took-hit-fatal"
+            : "foe-took-hit";
+    briefClass(attackerStack, lungeClass, ms);
+    briefClass(victimStack, hitClass, ms);
+    briefClass(victimMark, fatal ? "hit-mark-active-kill" : "hit-mark-active", ms);
 }
 function resolveFoeCounterAttack() {
     if (!foe || foe.hp <= 0)
         return null;
     const hit = randomDamage(getEffectiveFoeAttack());
     player.hp = Math.max(0, player.hp - hit);
+    applyPlayerHitHypeLoss();
     const died = player.hp <= 0;
     showDamagePop("hero", `-${hit}`, "damage");
-    playHitKnockback("hero", died);
+    playHitExchange("foe", "hero", died);
     if (player.hp <= 0) {
         return hit;
     }
@@ -1104,7 +1128,7 @@ async function onAttack() {
     foe.hp = Math.max(0, foe.hp - hit);
     const foeKilled = foe.hp <= 0;
     showDamagePop("foe", `-${hit}`, "damage");
-    playHitKnockback("foe", foeKilled);
+    playHitExchange("hero", "foe", foeKilled);
     logLine(`You hit ${foe.name} for ${hit} damage.`, "player");
     render();
     if (foeKilled) {

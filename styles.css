@@ -801,14 +801,6 @@ body::before {
   white-space: nowrap;
 }
 
-.hero-status .hype-stat {
-  color: var(--hero);
-}
-
-.enemy-status .hype-stat {
-  color: var(--foe-accent);
-}
-
 .hype-stat {
   min-width: 0;
   text-align: right;
@@ -888,27 +880,29 @@ body::before {
   animation: hero-run-in 0.55s cubic-bezier(0.34, 1.4, 0.64, 1);
 }
 
-.hero-knockback .emoji-stack {
-  animation: hero-knockback 0.36s ease-out;
+.emoji-stack.hero-lunge {
+  animation: hero-lunge 0.36s ease-out;
 }
 
-.foe-knockback .emoji-stack {
-  animation: foe-knockback 0.36s ease-out;
+.emoji-stack.foe-lunge {
+  animation: foe-lunge 0.36s ease-out;
 }
 
-.hero-knockback .hit-mark-hero {
+.emoji-stack.hero-took-hit,
+.emoji-stack.hero-took-hit-fatal {
+  animation: hero-took-hit 0.36s ease-out;
+}
+
+.emoji-stack.foe-took-hit,
+.emoji-stack.foe-took-hit-fatal {
+  animation: foe-took-hit 0.36s ease-out;
+}
+
+.hit-mark.hit-mark-active {
   animation: hit-mark-pop 0.36s ease-out;
 }
 
-.foe-knockback .hit-mark-foe {
-  animation: hit-mark-pop 0.36s ease-out;
-}
-
-.foe-knockback-kill .emoji-stack {
-  animation: foe-knockback 0.36s ease-out;
-}
-
-.foe-knockback-kill .hit-mark-foe {
+.hit-mark.hit-mark-active-kill {
   animation: hit-mark-pop-kill 0.42s ease-out;
 }
 
@@ -978,8 +972,16 @@ body::before {
 }
 
 .hero-status .hp-numbers,
-.hero-status .stat-mini {
+.hero-status .stat-mini:not(.hype-stat) {
   color: var(--hero-plate-text);
+}
+
+.hero-status .stat-mini.hype-stat {
+  color: var(--hero);
+}
+
+.enemy-status .stat-mini.hype-stat {
+  color: var(--foe-accent);
 }
 
 .enemy-hp-wrap {
@@ -1387,13 +1389,23 @@ body::before {
   }
 }
 
-@keyframes hero-knockback {
+@keyframes hero-lunge {
   0%,
   100% {
     transform: translate(0, 0);
   }
   35% {
-    transform: translate(10px, 2px);
+    transform: translate(14px, 2px);
+  }
+}
+
+@keyframes hero-took-hit {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  35% {
+    transform: translate(-14px, 3px);
   }
 }
 
@@ -1460,13 +1472,23 @@ body::before {
   }
 }
 
-@keyframes foe-knockback {
+@keyframes foe-lunge {
   0%,
   100% {
     transform: translate(0, 0);
   }
   35% {
-    transform: translate(-10px, 2px);
+    transform: translate(-14px, 2px);
+  }
+}
+
+@keyframes foe-took-hit {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  35% {
+    transform: translate(14px, 3px);
   }
 }
 
