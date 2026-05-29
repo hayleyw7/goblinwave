@@ -20,6 +20,11 @@ describe("teach flash presentation", () => {
     expect(styles).not.toContain("@keyframes hype-teach-text-pulse");
   });
 
+  it("defines wave restore blink for combat reload", () => {
+    expect(styles).toContain(".hud-wave-line.hud-restore-blink");
+    expect(styles).toContain("@keyframes hud-restore-blink");
+  });
+
   it("defines hp teach pulse for player and foe bars", () => {
     expect(styles).toContain(".hp-bar.hp-first-heal-flash .player-hp");
     expect(styles).toContain(".hp-bar.hp-first-attack-flash .foe-hp");

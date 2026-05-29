@@ -6,7 +6,7 @@ test.describe("Critterwave — happy paths", () => {
   test("hero setup starts a run", async ({ page }) => {
     await startFreshRun(page);
     await expect(page.locator("#hero-name")).toContainText(/test critter/i);
-    await expect(page.locator("#wave-banner")).toHaveText(/1\s*\/\s*\d+/);
+    await expect(page.locator("#wave-banner")).toHaveText(/^Wave 1 \/ \d+$/);
     await expect(page.locator("#battle-text")).toContainText(/appears!/i);
     await expect(page.locator("#player-hp-text")).toHaveText("20/20");
 
@@ -58,6 +58,13 @@ test.describe("Critterwave — happy paths", () => {
     });
     await expect(page.locator("#wave-banner")).toHaveText(waveBefore ?? "");
     await expect(page.locator("#foe-name")).not.toHaveText(foeBefore ?? "");
+  });
+
+  test("high score lives in the footer not the top hud", async ({ page }) => {
+    await startFreshRun(page);
+    await expect(page.locator(".records-bar #stat-best-wave")).toBeVisible();
+    await expect(page.locator(".hud-stats #stat-best-wave")).toHaveCount(0);
+    await expect(page.getByText("High Score", { exact: true })).toBeVisible();
   });
 
   test("new run returns to hero setup", async ({ page }) => {
@@ -190,5 +197,20 @@ test.describe("Critterwave — sad paths", () => {
     await expect(page.locator("#foe-hype-wrap")).toHaveClass(/hype-maxed/);
     await expect(page.locator("#player-hype-wrap")).not.toHaveClass(/hype-maxed-flash/);
     await expect(page.locator("#foe-hype-wrap")).not.toHaveClass(/hype-maxed-flash/);
+  });
+
+  test("shows turn dash on game over", async ({ page }) => {
+    await startFreshRun(page);
+    await patchSaveSnapshot(page, {
+      player: { hp: 1, maxHp: 20 },
+      foe: { attack: 20 },
+    });
+    await page.reload();
+    await page.getByRole("button", { name: "Attack" }).click();
+    await expect(page.getByRole("button", { name: "Try Again?" })).toBeVisible({
+      timeout: 15_000,
+    });
+    await expect(page.locator("#turn-label")).toHaveText("-");
+    await expect(page.locator("#wave-banner")).toContainText("Wave");
   });
 });

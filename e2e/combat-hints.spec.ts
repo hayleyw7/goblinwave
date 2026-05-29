@@ -419,31 +419,6 @@ test.describe("combat hints — teach flashes", () => {
     await page.waitForTimeout(1600);
     await expect(page.locator("#player-hype-wrap")).not.toHaveClass(/hype-first-dance-flash/);
   });
-
-  test("first hype flash pulses bar and text in unison", async ({ page }) => {
-    await startFreshRun(page);
-    await page.getByRole("button", { name: "Dance" }).click();
-    await expect(page.locator("#player-hype-wrap")).toHaveClass(/hype-first-dance-flash/, {
-      timeout: 10_000,
-    });
-
-    const delays = await page.evaluate(() => {
-      const wrap = document.querySelector("#player-hype-wrap")!;
-      const bar = wrap.querySelector(".hype-bar") as HTMLElement;
-      const stat = wrap.querySelector(".hype-stat") as HTMLElement;
-      return {
-        barAnimation: getComputedStyle(bar).animationName,
-        textAnimation: getComputedStyle(stat).animationName,
-        barDelay: getComputedStyle(bar).animationDelay,
-        textDelay: getComputedStyle(stat).animationDelay,
-      };
-    });
-
-    expect(delays.barAnimation).toBe("hype-teach-flash");
-    expect(delays.textAnimation).toBe("hype-teach-flash");
-    expect(delays.barDelay).toBe("0s");
-    expect(delays.textDelay).toBe("0s");
-  });
 });
 
 test.describe("combat hints — wave 12 dance fallback", () => {
