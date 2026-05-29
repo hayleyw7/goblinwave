@@ -866,8 +866,16 @@ function clearHitReact(panel: HTMLElement): void {
     ?.classList.remove("hit-mark-active", "hit-mark-active-kill");
 }
 
-function playHeroHeal(): void {
-  briefClass(el.playerPanel, "hero-heal", HEAL_ANIM_MS);
+function playHeroHeal(): Promise<void> {
+  return new Promise((resolve) => {
+    el.playerPanel.classList.remove("hero-heal");
+    void el.playerPanel.offsetWidth;
+    el.playerPanel.classList.add("hero-heal");
+    window.setTimeout(() => {
+      el.playerPanel.classList.remove("hero-heal");
+      resolve();
+    }, HEAL_ANIM_MS);
+  });
 }
 
 function playHeroDance(): void {
@@ -1109,7 +1117,7 @@ async function transitionToNextWave(
     await pause(COUNTER_ATTACK_DELAY_MS);
 
     if (transition === "defeat") {
-      applyWaveVictoryHeal();
+      await applyWaveVictoryHeal();
     }
   }
 
@@ -1356,7 +1364,7 @@ async function onAttack(): Promise<void> {
     const isFinal = wave >= getCampaignLength();
     await playFoeDefeat(isFinal);
     if (isFinal) {
-      applyWaveVictoryHeal();
+      await applyWaveVictoryHeal();
       winCampaign();
     } else {
       await winWave();
@@ -1381,7 +1389,7 @@ async function onAttack(): Promise<void> {
   }
 }
 
-function applyWaveVictoryHeal(): number {
+async function applyWaveVictoryHeal(): Promise<number> {
   const before = player.hp;
   player.hp = Math.min(player.maxHp, player.hp + HEAL_AMOUNT);
   const gained = player.hp - before;
@@ -1389,7 +1397,8 @@ function applyWaveVictoryHeal(): number {
     return 0;
   }
   showDamagePop("hero", `+${gained}`, "heal");
-  playHeroHeal();
+  render();
+  await playHeroHeal();
   render();
   return gained;
 }
@@ -1398,7 +1407,8 @@ async function onHeal(): Promise<void> {
   const heal = HEAL_AMOUNT;
   player.hp = Math.min(player.maxHp, player.hp + heal);
   showDamagePop("hero", `+${heal}`, "heal");
-  playHeroHeal();
+  render();
+  await playHeroHeal();
   logLine(`You healed yourself for ${heal} HP.`, "player");
   render();
   await pause(COUNTER_ATTACK_DELAY_MS);

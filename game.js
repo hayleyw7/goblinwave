@@ -661,7 +661,15 @@ function clearHitReact(panel) {
         ?.classList.remove("hit-mark-active", "hit-mark-active-kill");
 }
 function playHeroHeal() {
-    briefClass(el.playerPanel, "hero-heal", HEAL_ANIM_MS);
+    return new Promise((resolve) => {
+        el.playerPanel.classList.remove("hero-heal");
+        void el.playerPanel.offsetWidth;
+        el.playerPanel.classList.add("hero-heal");
+        window.setTimeout(() => {
+            el.playerPanel.classList.remove("hero-heal");
+            resolve();
+        }, HEAL_ANIM_MS);
+    });
 }
 function playHeroDance() {
     briefClass(el.playerPanel, "hero-dance", DANCE_ANIM_MS);
@@ -851,7 +859,7 @@ async function transitionToNextWave(previousFoeName, transition, entrance = "foe
         logLine(actionText, "player");
         await pause(COUNTER_ATTACK_DELAY_MS);
         if (transition === "defeat") {
-            applyWaveVictoryHeal();
+            await applyWaveVictoryHeal();
         }
     }
     wave += 1;
@@ -1052,7 +1060,7 @@ async function onAttack() {
         const isFinal = wave >= getCampaignLength();
         await playFoeDefeat(isFinal);
         if (isFinal) {
-            applyWaveVictoryHeal();
+            await applyWaveVictoryHeal();
             winCampaign();
         }
         else {
@@ -1071,7 +1079,7 @@ async function onAttack() {
         await handlePlayerDeath();
     }
 }
-function applyWaveVictoryHeal() {
+async function applyWaveVictoryHeal() {
     const before = player.hp;
     player.hp = Math.min(player.maxHp, player.hp + HEAL_AMOUNT);
     const gained = player.hp - before;
@@ -1079,7 +1087,8 @@ function applyWaveVictoryHeal() {
         return 0;
     }
     showDamagePop("hero", `+${gained}`, "heal");
-    playHeroHeal();
+    render();
+    await playHeroHeal();
     render();
     return gained;
 }
@@ -1087,7 +1096,8 @@ async function onHeal() {
     const heal = HEAL_AMOUNT;
     player.hp = Math.min(player.maxHp, player.hp + heal);
     showDamagePop("hero", `+${heal}`, "heal");
-    playHeroHeal();
+    render();
+    await playHeroHeal();
     logLine(`You healed yourself for ${heal} HP.`, "player");
     render();
     await pause(COUNTER_ATTACK_DELAY_MS);
