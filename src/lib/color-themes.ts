@@ -62,14 +62,14 @@ export const COLOR_THEMES = [
   {
     id: "fuchsia",
     label: "Pink",
-    accent: "#f0abfc",
-    dark: "#86198f",
-    plateText: "#fae8ff",
-    panelBg: "rgba(134, 25, 143, 0.22)",
-    plateBg: "rgba(134, 25, 143, 0.92)",
-    hpWrapBg: "rgba(134, 25, 143, 0.38)",
-    divider: "rgba(240, 171, 252, 0.45)",
-    buffBg: "rgba(192, 38, 211, 0.5)",
+    accent: "#f06ec8",
+    dark: "#9d2466",
+    plateText: "#fce7f3",
+    panelBg: "rgba(157, 36, 102, 0.22)",
+    plateBg: "rgba(124, 28, 82, 0.92)",
+    hpWrapBg: "rgba(157, 36, 102, 0.38)",
+    divider: "rgba(240, 110, 200, 0.48)",
+    buffBg: "rgba(200, 50, 140, 0.52)",
   },
 ] as const;
 

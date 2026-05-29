@@ -131,13 +131,12 @@ type GameSnapshot = {
 const STORAGE_KEY = "critterwave-v1";
 const LEGACY_STORAGE_KEYS = ["goblinwave-v4", "goblinwave-v1"] as const;
 const CAMPAIGN_WAVES = CAMPAIGN_WAVE_COUNT;
-const COUNTER_ATTACK_DELAY_MS = 1000;
 const FOE_POOF_MS = 450;
 const FOE_ENTRANCE_MS = 550;
+/** Foe counter damage pop + hit react, after your attack/heal visuals. */
+const COUNTER_HIT_VISUAL_DELAY_MS = 200;
 const DEATH_BEAT_MS = 1200;
 const GOLD_FLASH_MS = 650;
-const KILL_KNOCKBACK_SETTLE_MS = 180;
-const DEFEAT_TEXT_BEAT_MS = 450;
 const HEAL_ANIM_MS = 420;
 const DANCE_ANIM_MS = 550;
 const DEFAULT_HERO_EMOJI = "🐱";
@@ -235,7 +234,6 @@ let wave = 1;
 let hypeLevel = 0;
 let foeHypeLevel = 0;
 let phase: GameSnapshot["phase"] = "combat";
-let actionsLocked = false;
 let pendingHeroEmoji = DEFAULT_HERO_EMOJI;
 let pendingHeroLabel = DEFAULT_HERO_LABEL;
 let heroColorTheme: HeroColorTheme = DEFAULT_HERO_COLOR_THEME;
@@ -1098,10 +1096,6 @@ function render(): void {
   el.restartLabel.textContent = phase === "victory" ? "Play again?" : "Try again?";
   el.actions.classList.toggle("hidden", inEndScreen);
   el.turnLabel.classList.toggle("hidden", inEndScreen);
-
-  for (const btn of el.actions.querySelectorAll<HTMLButtonElement>("button")) {
-    btn.disabled = actionsLocked || inEndScreen;
-  }
 }
 
 function escapeHtml(text: string): string {
@@ -1168,8 +1162,7 @@ async function transitionToNextWave(
   if (fleeWithExitAnim) {
     logLine(`You run away from ${previousFoeName},`, "player");
   } else if (transition === "defeat" && knownDefeatVerb) {
-    await pause(DEFEAT_TEXT_BEAT_MS);
-    await applyWaveVictoryHeal();
+    void applyWaveVictoryHeal();
   } else {
     const actionText =
       transition === "flee"
@@ -1177,12 +1170,9 @@ async function transitionToNextWave(
         : `You ${defeatVerb} ${previousFoeName},`;
 
     logLine(actionText, "player");
-    await pause(
-      transition === "defeat" ? DEFEAT_TEXT_BEAT_MS : COUNTER_ATTACK_DELAY_MS
-    );
 
     if (transition === "defeat") {
-      await applyWaveVictoryHeal();
+      void applyWaveVictoryHeal();
     }
   }
 
@@ -1197,7 +1187,7 @@ async function transitionToNextWave(
 
   if (playerLevel > levelBefore) {
     render();
-    await playLevelUpNotice();
+    void playLevelUpNotice();
   }
 
   if (fleeWithExitAnim) {
@@ -1320,7 +1310,6 @@ function hasDebugWin(): boolean {
 
 function triggerDebugWin(): void {
   hideSetup();
-  actionsLocked = false;
 
   if (!player.emoji) {
     const first = HEROES[0]!;
@@ -1388,66 +1377,65 @@ function playHitExchange(
   briefClass(victimMark, fatal ? "hit-mark-active-kill" : "hit-mark-active", ms);
 }
 
-function resolveFoeCounterAttack(): number | null {
+function applyFoeCounterAttack(): number | null {
   if (!foe || foe.hp <= 0) return null;
 
   const hit = rollDamage(getEffectiveFoeAttack());
   player.hp = Math.max(0, player.hp - hit);
   applyPlayerHitHypeLoss();
-  const died = player.hp <= 0;
-  showDamagePop("hero", `-${hit}`, "damage");
-  playHitExchange("foe", "hero", died);
 
-  if (player.hp <= 0) {
-    return hit;
+  if (player.hp > 0) {
+    turn += 1;
   }
 
-  turn += 1;
   return hit;
 }
 
-async function withActionLock(fn: () => void | Promise<void>): Promise<void> {
-  if (actionsLocked || phase === "gameover" || phase === "victory") return;
-  actionsLocked = true;
-  render();
-  try {
-    await fn();
-  } finally {
-    actionsLocked = false;
-    render();
-  }
+function playFoeCounterHitVisuals(hit: number, fatal: boolean): void {
+  // Hero's hit react may still be on the foe stack; clear so foe-lunge doesn't fight foe-took-hit.
+  clearHitReact(el.foePanel);
+  clearHitReact(el.playerPanel);
+  showDamagePop("hero", `-${hit}`, "damage");
+  playHitExchange("foe", "hero", fatal);
 }
 
-async function onAttack(): Promise<void> {
-  if (!foe) return;
+function scheduleFoeCounterHitVisuals(hit: number): void {
+  const fatal = player.hp <= 0;
+  window.setTimeout(() => {
+    if (phase !== "combat" && !fatal) return;
+    playFoeCounterHitVisuals(hit, fatal);
+    if (fatal) {
+      void handlePlayerDeath();
+    }
+  }, COUNTER_HIT_VISUAL_DELAY_MS);
+}
+
+function onAttack(): void {
+  if (!foe || phase !== "combat") return;
 
   const hit = rollDamage(getEffectiveAttack());
   foe.hp = Math.max(0, foe.hp - hit);
   const foeKilled = foe.hp <= 0;
   showDamagePop("foe", `-${hit}`, "damage");
   playHitExchange("hero", "foe", foeKilled);
-  logLine(`You hit ${foe.name} for ${hit} damage.`, "player");
-  render();
 
   if (foeKilled) {
-    await pause(KILL_KNOCKBACK_SETTLE_MS);
     const defeatVerb = nextDefeatVerb();
-    logLine(`You ${defeatVerb} ${foe.name},`, "player");
+    logLine(`You hit ${foe.name} for ${hit} damage. You ${defeatVerb} ${foe.name},`, "player");
+    render();
     const isFinal = wave >= getCampaignLength();
-    await playFoeDefeat(isFinal);
-    if (isFinal) {
-      await pause(DEFEAT_TEXT_BEAT_MS);
-      await applyWaveVictoryHeal();
-      winCampaign();
-    } else {
-      await winWave(defeatVerb);
-    }
+    void playFoeDefeat(isFinal).then(() => {
+      if (isFinal) {
+        applyWaveVictoryHeal();
+        winCampaign();
+      } else {
+        void winWave(defeatVerb);
+      }
+    });
     return;
   }
 
-  await pause(COUNTER_ATTACK_DELAY_MS);
-
-  const counterHit = resolveFoeCounterAttack();
+  const counterHit = applyFoeCounterAttack();
   if (counterHit === null) return;
 
   logBattleLines(
@@ -1456,49 +1444,39 @@ async function onAttack(): Promise<void> {
   );
   render();
   persist();
-
-  if (player.hp <= 0) {
-    await handlePlayerDeath();
-  }
+  scheduleFoeCounterHitVisuals(counterHit);
 }
 
-async function applyWaveVictoryHeal(): Promise<number> {
+function applyWaveVictoryHeal(): void {
   const before = player.hp;
   player.hp = player.maxHp;
   const gained = player.hp - before;
   if (gained <= 0) {
-    return 0;
+    return;
   }
   showDamagePop("hero", `+${gained}`, "heal");
   render();
-  await playHeroHeal();
-  render();
-  return gained;
+  void playHeroHeal();
 }
 
-async function onHeal(): Promise<void> {
+function onHeal(): void {
+  if (!foe || phase !== "combat") return;
+
   const heal = rollHeal(getHealMax());
   player.hp = Math.min(player.maxHp, player.hp + heal);
   showDamagePop("hero", `+${heal}`, "heal");
-  render();
-  await playHeroHeal();
-  logLine(`You healed yourself for ${heal} HP.`, "player");
-  render();
-  await pause(COUNTER_ATTACK_DELAY_MS);
+  void playHeroHeal();
 
-  const counterHit = resolveFoeCounterAttack();
+  const counterHit = applyFoeCounterAttack();
   if (counterHit === null) return;
 
   logBattleLines(
     { text: `You healed yourself for ${heal} HP.`, kind: "player" },
-    { text: `${foe!.name} hits you for ${counterHit} damage.`, kind: "foe" }
+    { text: `${foe.name} hits you for ${counterHit} damage.`, kind: "foe" }
   );
   render();
   persist();
-
-  if (player.hp <= 0) {
-    await handlePlayerDeath();
-  }
+  scheduleFoeCounterHitVisuals(counterHit);
 }
 
 function logDanceLines(opener: string, reactionHtml: string, tail: string): void {
@@ -1514,7 +1492,9 @@ function logDanceLines(opener: string, reactionHtml: string, tail: string): void
   revealBattleLog();
 }
 
-async function onDance(): Promise<void> {
+function onDance(): void {
+  if (!foe || phase !== "combat") return;
+
   const response = pickRandomDanceResponse();
   const attemptedPlayerGain = getPlayerHypeGain(response);
   const attemptedFoeGain = getFoeHypeGain(response);
@@ -1534,23 +1514,20 @@ async function onDance(): Promise<void> {
   }
 
   const opener = escapeHtml(pickRandomDanceOpener());
-  logHtmlLine(`<span class="battle-line battle-player">${opener}</span>`, "player");
-  playHeroDance();
-  await pause(COUNTER_ATTACK_DELAY_MS);
-
   const reaction = escapeHtml(formatFoeInText(response.message));
-  const tail = formatDanceHypeTail(actualPlayerGain, actualFoeGain, foe?.name, {
+  const tail = formatDanceHypeTail(actualPlayerGain, actualFoeGain, foe.name, {
     playerCapped,
     foeCapped,
   });
-  logDanceLines(opener, reaction, "");
+
+  playHeroDance();
   if (joins || attemptedFoeGain > 0) {
     playFoeDance();
   }
 
+  logDanceLines(opener, reaction, tail);
+
   if (tail) {
-    await pause(COUNTER_ATTACK_DELAY_MS);
-    logDanceLines(opener, reaction, tail);
     showHypeGainPops(actualPlayerGain, actualFoeGain);
     if (playerCapped) {
       briefClass(el.playerHypeWrap, "hype-capped-flash", 420);
@@ -1558,7 +1535,6 @@ async function onDance(): Promise<void> {
     if (foeCapped) {
       briefClass(el.foeHypeWrap, "hype-capped-flash", 420);
     }
-    render();
   }
 
   turn += 1;
@@ -1566,8 +1542,8 @@ async function onDance(): Promise<void> {
   persist();
 }
 
-async function onRun(): Promise<void> {
-  if (!foe) return;
+function onRun(): void {
+  if (!foe || phase !== "combat") return;
 
   if (wave >= getCampaignLength()) {
     logLine("No fleeing the final foe!", "info");
@@ -1577,7 +1553,7 @@ async function onRun(): Promise<void> {
   clearAllHype();
   const fledFoe = foe.name;
   const exitAnimPromise = playRunExit();
-  await transitionToNextWave(fledFoe, "flee", "run", exitAnimPromise);
+  void transitionToNextWave(fledFoe, "flee", "run", exitAnimPromise);
 }
 
 function applyHeroChoice(emoji: string, label: string): void {
@@ -1730,22 +1706,22 @@ function bindActions(): void {
     if (!target) return;
 
     const action = target.dataset.action;
-    void withActionLock(async () => {
-      switch (action) {
-        case "attack":
-          await onAttack();
-          break;
-        case "heal":
-          await onHeal();
-          break;
-        case "dance":
-          await onDance();
-          break;
-        case "run":
-          await onRun();
-          break;
-      }
-    });
+    if (phase !== "combat") return;
+
+    switch (action) {
+      case "attack":
+        onAttack();
+        break;
+      case "heal":
+        onHeal();
+        break;
+      case "dance":
+        onDance();
+        break;
+      case "run":
+        onRun();
+        break;
+    }
   });
 
   el.restartBtn.addEventListener("click", () => {

@@ -791,14 +791,14 @@ body.is-booting .game-shell {
 }
 
 .enemy-status.foe-theme-fuchsia {
-  --foe-accent: #f0abfc;
-  --foe-accent-dark: #86198f;
-  --foe-panel-bg: rgba(134, 25, 143, 0.22);
-  --foe-plate-bg: rgba(134, 25, 143, 0.92);
-  --foe-plate-text: #fae8ff;
-  --foe-buff-bg: rgba(192, 38, 211, 0.5);
-  --foe-hp-wrap-bg: rgba(134, 25, 143, 0.38);
-  --foe-divider: rgba(240, 171, 252, 0.45);
+  --foe-accent: #f06ec8;
+  --foe-accent-dark: #9d2466;
+  --foe-panel-bg: rgba(157, 36, 102, 0.22);
+  --foe-plate-bg: rgba(124, 28, 82, 0.92);
+  --foe-plate-text: #fce7f3;
+  --foe-buff-bg: rgba(200, 50, 140, 0.52);
+  --foe-hp-wrap-bg: rgba(157, 36, 102, 0.38);
+  --foe-divider: rgba(240, 110, 200, 0.48);
 }
 
 .status-panel > .name-plate,
