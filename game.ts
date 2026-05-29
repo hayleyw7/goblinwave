@@ -192,6 +192,7 @@ const DEATH_BEAT_MS = 1200;
 const GOLD_FLASH_MS = 650;
 const KILL_KNOCKBACK_SETTLE_MS = 180;
 const HEAL_ANIM_MS = 420;
+const HEAL_AMOUNT = 3;
 const DANCE_ANIM_MS = 550;
 const DEFAULT_HERO_EMOJI = "🐱";
 const DEFAULT_HERO_LABEL = "Cat";
@@ -1106,6 +1107,10 @@ async function transitionToNextWave(
 
     logLine(actionText, "player");
     await pause(COUNTER_ATTACK_DELAY_MS);
+
+    if (transition === "defeat") {
+      applyWaveVictoryHeal();
+    }
   }
 
   wave += 1;
@@ -1351,6 +1356,7 @@ async function onAttack(): Promise<void> {
     const isFinal = wave >= getCampaignLength();
     await playFoeDefeat(isFinal);
     if (isFinal) {
+      applyWaveVictoryHeal();
       winCampaign();
     } else {
       await winWave();
@@ -1375,8 +1381,21 @@ async function onAttack(): Promise<void> {
   }
 }
 
+function applyWaveVictoryHeal(): number {
+  const before = player.hp;
+  player.hp = Math.min(player.maxHp, player.hp + HEAL_AMOUNT);
+  const gained = player.hp - before;
+  if (gained <= 0) {
+    return 0;
+  }
+  showDamagePop("hero", `+${gained}`, "heal");
+  playHeroHeal();
+  render();
+  return gained;
+}
+
 async function onHeal(): Promise<void> {
-  const heal = 3;
+  const heal = HEAL_AMOUNT;
   player.hp = Math.min(player.maxHp, player.hp + heal);
   showDamagePop("hero", `+${heal}`, "heal");
   playHeroHeal();
