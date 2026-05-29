@@ -1464,8 +1464,7 @@ async function onAttack(): Promise<void> {
 
 async function applyWaveVictoryHeal(): Promise<number> {
   const before = player.hp;
-  const heal = rollHeal(getHealMax());
-  player.hp = Math.min(player.maxHp, player.hp + heal);
+  player.hp = player.maxHp;
   const gained = player.hp - before;
   if (gained <= 0) {
     return 0;
