@@ -25,6 +25,14 @@ import {
 } from "./content/dance-responses.js";
 import { assertHeroPickerOrderCovers, heroPickerOrderIndex } from "./lib/hero-groups.js";
 import {
+  COLOR_THEME_IDS,
+  COLOR_THEMES,
+  DEFAULT_COLOR_THEME,
+  getColorTheme,
+  isColorThemeId,
+  type ColorThemeId,
+} from "./lib/color-themes.js";
+import {
   startVictoryCelebration,
   stopVictoryCelebration,
 } from "./ui/victory-celebration.js";
@@ -67,95 +75,18 @@ type HeroOption = {
   emoji: string;
 };
 
-const FOE_COLOR_THEMES = ["amber", "rose", "sky", "coral", "fuchsia"] as const;
-type FoeColorTheme = (typeof FOE_COLOR_THEMES)[number];
-
-const FOE_THEME_ACCENTS: Record<FoeColorTheme, string> = {
-  amber: "#facc15",
-  rose: "#fb7185",
-  sky: "#38bdf8",
-  coral: "#fb923c",
-  fuchsia: "#e879f9",
-};
+const FOE_COLOR_THEMES = COLOR_THEME_IDS;
+type FoeColorTheme = ColorThemeId;
 
 function normalizeFoeColorTheme(theme: string | undefined): FoeColorTheme {
-  if (theme && FOE_COLOR_THEMES.includes(theme as FoeColorTheme)) {
-    return theme as FoeColorTheme;
+  if (theme && isColorThemeId(theme)) {
+    return theme;
   }
   return "amber";
 }
 
-const HERO_COLOR_THEMES = [
-  {
-    id: "green",
-    label: "Green",
-    accent: "#4ade80",
-    dark: "#166534",
-    plateText: "#dcfce7",
-    panelBg: "rgba(22, 101, 52, 0.22)",
-    plateBg: "rgba(22, 101, 52, 0.92)",
-    hpWrapBg: "rgba(22, 101, 52, 0.38)",
-    divider: "rgba(74, 222, 128, 0.45)",
-  },
-  {
-    id: "amber",
-    label: "Gold",
-    accent: "#facc15",
-    dark: "#854d0e",
-    plateText: "#fef9c3",
-    panelBg: "rgba(133, 77, 14, 0.22)",
-    plateBg: "rgba(133, 77, 14, 0.92)",
-    hpWrapBg: "rgba(133, 77, 14, 0.38)",
-    divider: "rgba(250, 204, 21, 0.45)",
-  },
-  {
-    id: "rose",
-    label: "Rose",
-    accent: "#fb7185",
-    dark: "#881337",
-    plateText: "#ffe4e6",
-    panelBg: "rgba(136, 19, 55, 0.22)",
-    plateBg: "rgba(136, 19, 55, 0.92)",
-    hpWrapBg: "rgba(136, 19, 55, 0.38)",
-    divider: "rgba(251, 113, 133, 0.45)",
-  },
-  {
-    id: "sky",
-    label: "Sky",
-    accent: "#38bdf8",
-    dark: "#0c4a6e",
-    plateText: "#e0f2fe",
-    panelBg: "rgba(12, 74, 110, 0.22)",
-    plateBg: "rgba(12, 74, 110, 0.92)",
-    hpWrapBg: "rgba(12, 74, 110, 0.38)",
-    divider: "rgba(56, 189, 248, 0.45)",
-  },
-  {
-    id: "coral",
-    label: "Coral",
-    accent: "#fb923c",
-    dark: "#9a3412",
-    plateText: "#ffedd5",
-    panelBg: "rgba(154, 52, 18, 0.22)",
-    plateBg: "rgba(154, 52, 18, 0.92)",
-    hpWrapBg: "rgba(154, 52, 18, 0.38)",
-    divider: "rgba(251, 146, 60, 0.45)",
-  },
-  {
-    id: "fuchsia",
-    label: "Pink",
-    accent: "#f472b6",
-    dark: "#9d174d",
-    plateText: "#fce7f3",
-    panelBg: "rgba(157, 23, 77, 0.22)",
-    plateBg: "rgba(157, 23, 77, 0.92)",
-    hpWrapBg: "rgba(157, 23, 77, 0.38)",
-    divider: "rgba(244, 114, 182, 0.45)",
-  },
-] as const;
-
-type HeroColorTheme = (typeof HERO_COLOR_THEMES)[number]["id"];
-const DEFAULT_HERO_COLOR_THEME: HeroColorTheme = "green";
+type HeroColorTheme = ColorThemeId;
+const DEFAULT_HERO_COLOR_THEME: HeroColorTheme = DEFAULT_COLOR_THEME;
 
 type SaveData = {
   bestWave: number;
@@ -515,7 +446,7 @@ function pickNextFoeColor(): FoeColorTheme {
     options = getAvailableFoeColorThemes(false);
   }
   if (options.length === 0) {
-    options = [...FOE_COLOR_THEMES];
+    options = FOE_COLOR_THEMES.filter((theme) => !foeColorConflictsWithHero(theme));
   }
   const picked = options[Math.floor(Math.random() * options.length)] ?? "amber";
   lastFoeColorTheme = picked;
@@ -535,7 +466,7 @@ function applyFoeColorTheme(theme: FoeColorTheme): void {
     panel.classList.remove(`foe-theme-${name}`);
   }
   panel.classList.add(`foe-theme-${theme}`);
-  el.gameShell.style.setProperty("--foe-accent", FOE_THEME_ACCENTS[theme]);
+  el.gameShell.style.setProperty("--foe-accent", getColorTheme(theme).accent);
 }
 
 function getSnapshot(): GameSnapshot {
@@ -587,11 +518,11 @@ function readHeroNameFromSetup(): string {
 }
 
 function isHeroColorTheme(value: string): value is HeroColorTheme {
-  return HERO_COLOR_THEMES.some((theme) => theme.id === value);
+  return isColorThemeId(value);
 }
 
 function getHeroColorThemeDefinition(theme: HeroColorTheme) {
-  return HERO_COLOR_THEMES.find((entry) => entry.id === theme) ?? HERO_COLOR_THEMES[0]!;
+  return getColorTheme(theme);
 }
 
 function resolveHeroColorTheme(save: SaveData): HeroColorTheme {
@@ -680,7 +611,7 @@ function syncHeroColorSwatchSelection(): void {
 function buildHeroColorSwatches(): void {
   if (!el.heroColorSwatches) return;
   el.heroColorSwatches.innerHTML = "";
-  for (const theme of HERO_COLOR_THEMES) {
+  for (const theme of COLOR_THEMES) {
     const btn = document.createElement("button");
     btn.type = "button";
     btn.className = "setup-color-swatch";

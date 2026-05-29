@@ -167,9 +167,6 @@ export function foeColorConflictsWithHero(
   heroColorTheme: string,
   foeColorTheme: string
 ): boolean {
-  if (heroColorTheme === "green") {
-    return false;
-  }
   return heroColorTheme === foeColorTheme;
 }
 

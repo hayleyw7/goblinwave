@@ -180,7 +180,8 @@ describe("setup blockers", () => {
 });
 
 describe("foe color conflicts", () => {
-  it("only conflicts when hero picked a non-green theme matching foe", () => {
+  it("conflicts when hero and foe use the same theme", () => {
+    expect(foeColorConflictsWithHero("green", "green")).toBe(true);
     expect(foeColorConflictsWithHero("green", "amber")).toBe(false);
     expect(foeColorConflictsWithHero("rose", "rose")).toBe(true);
     expect(foeColorConflictsWithHero("sky", "amber")).toBe(false);
