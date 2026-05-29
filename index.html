@@ -31,22 +31,24 @@
 
     <div class="character-setup hidden" id="character-setup">
       <div class="setup-panel">
-        <h2 class="setup-title">Pick your hero</h2>
-        <p class="setup-hint">Same roster as foes — 115 critters and fantasy creatures.</p>
-        <div class="emoji-picker" id="hero-picker" role="listbox" aria-label="Hero emoji"></div>
-        <div class="setup-name-field">
-          <label class="setup-name-label" for="hero-name-input">Your name</label>
-          <input
-            type="text"
-            id="hero-name-input"
-            class="setup-name-input"
-            maxlength="16"
-            autocomplete="nickname"
-            spellcheck="false"
-            placeholder="Up to 16 characters"
-          />
+        <div class="setup-fields">
+          <h2 class="setup-title">What critter are you?</h2>
+          <div class="setup-name-field">
+            <label class="setup-name-label" for="hero-name-input">Your name</label>
+            <input
+              type="text"
+              id="hero-name-input"
+              class="setup-name-input"
+              maxlength="16"
+              autocomplete="nickname"
+              spellcheck="false"
+              placeholder="Up to 16 characters"
+            required
+            />
+          </div>
+          <div class="emoji-picker" id="hero-picker" role="listbox" aria-label="What critter are you?"></div>
         </div>
-        <button type="button" class="cmd cmd-start" id="setup-start-btn">Fight!</button>
+        <button type="button" class="cmd cmd-start" id="setup-start-btn" disabled>Fight!</button>
       </div>
     </div>
 
@@ -72,7 +74,7 @@
         </div>
 
         <main class="arena" id="arena">
-        <div class="battle-stage">
+        <div class="battle-stage" id="battle-stage">
           <div class="stage-floor"></div>
           <div class="stage-vignette"></div>
 
@@ -101,7 +103,10 @@
               </div>
             </div>
             <div class="sprite-wrap">
-              <span class="emoji-sprite hero-emoji" id="hero-emoji" role="img" aria-label="Hero">🦊</span>
+              <div class="emoji-stack">
+                <span class="hit-mark hit-mark-hero" aria-hidden="true">💢</span>
+                <span class="emoji-sprite hero-emoji" id="hero-emoji" role="img" aria-label="Hero">🦊</span>
+              </div>
             </div>
           </section>
 
@@ -132,8 +137,10 @@
               </div>
             </div>
             <div class="sprite-wrap foe-sprite-wrap">
-              <span class="emoji-sprite foe-emoji" id="foe-emoji" role="img" aria-label="Foe">👺</span>
-              <span class="foe-mood-badge hidden" id="foe-mood-badge" aria-hidden="true"></span>
+              <div class="emoji-stack">
+                <span class="hit-mark hit-mark-foe" aria-hidden="true">💢</span>
+                <span class="emoji-sprite foe-emoji" id="foe-emoji" role="img" aria-label="Foe">👺</span>
+              </div>
             </div>
           </section>
 
@@ -169,7 +176,11 @@
       </div>
 
       <footer class="records-bar" aria-label="Lifetime stats and game options">
-        <span class="records-stat">Runs played <strong id="stat-runs">0</strong></span>
+        <span class="records-stat">
+          <span>Runs</span>
+          <strong id="stat-runs">0</strong>
+          <span class="records-stat-played">played</span>
+        </span>
         <div class="meta-actions">
           <button type="button" class="meta-btn" id="quit-btn">Quit</button>
           <button type="button" class="meta-btn" id="restart-run-btn">Restart</button>

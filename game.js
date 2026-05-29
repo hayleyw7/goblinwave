@@ -4,8 +4,31 @@ const FOE_COLOR_THEMES = ["amber", "rose", "violet", "sky", "coral", "fuchsia"];
 const STORAGE_KEY = "critterwave-v1";
 const LEGACY_STORAGE_KEYS = ["goblinwave-v4", "goblinwave-v1"];
 const CAMPAIGN_WAVES = 100;
+const DEFEAT_VERBS = [
+    "defeated",
+    "vanquished",
+    "crushed",
+    "destroyed",
+    "bested",
+    "obliterated",
+    "smote",
+    "flattened",
+    "annihilated",
+    "pulverized",
+    "routed",
+    "trounced",
+    "clobbered",
+    "walloped",
+    "thrashed",
+];
 const HERO_NAME_MAX_LENGTH = 16;
 const HYPE_ATTACK_PER_LEVEL = 1;
+const COUNTER_ATTACK_DELAY_MS = 1000;
+const FOE_POOF_MS = 450;
+const FOE_ENTRANCE_MS = 550;
+const DEATH_BEAT_MS = 1200;
+const GOLD_FLASH_MS = 650;
+const KILL_KNOCKBACK_SETTLE_MS = 180;
 const DEFAULT_HERO_EMOJI = "🐱";
 const DEFAULT_HERO_LABEL = "Cat";
 function assertUniqueEmojis(entries) {
@@ -63,65 +86,55 @@ function restoreFoeOrder(ids, heroEmoji) {
     }
     return buildFoeOrder(heroEmoji);
 }
-const FOE_MOOD_EMOJI = {
-    default: "",
-    happy: "✨",
-    angry: "💢",
-    confused: "❓",
-    impressed: "⭐",
-    disappointed: "😒",
-    silly: "😂",
-    dancing: "🎵",
-};
 const danceResponses = [
-    { message: "{foe} boos loudly.", mood: "disappointed", playerHype: 0 },
-    { message: "{foe} crosses their arms and watches silently.", mood: "default", playerHype: 0 },
-    { message: "{foe} refuses to acknowledge your performance.", mood: "disappointed", playerHype: 0 },
-    { message: "{foe} looks disappointed in you personally.", mood: "disappointed", playerHype: 0 },
-    { message: "{foe} throws a tomato at you.", mood: "angry", playerHype: 0 },
-    { message: "{foe} rates your performance a 7/10.", mood: "default", playerHype: 0 },
-    { message: "{foe} checks their watch pointedly.", mood: "default", playerHype: 0 },
-    { message: "{foe} yawns mid-dance.", mood: "disappointed", playerHype: 0 },
-    { message: "{foe} holds up a little sign that says 2/10.", mood: "disappointed", playerHype: 0 },
-    { message: "{foe} pretends to take an important phone call.", mood: "default", playerHype: 0 },
-    { message: "{foe} slowly backs away from the dance floor.", mood: "confused", playerHype: 0 },
-    { message: "{foe} eats a sandwich, unimpressed.", mood: "default", playerHype: 0 },
-    { message: "{foe} claps once, then stops forever.", mood: "disappointed", playerHype: 0 },
-    { message: "{foe} puts on sunglasses and stares at the ceiling.", mood: "default", playerHype: 0 },
-    { message: "{foe} whispers they've seen better at a funeral.", mood: "disappointed", playerHype: 0 },
-    { message: "{foe} claps politely.", mood: "happy" },
-    { message: "{foe} looks confused but supportive.", mood: "confused" },
-    { message: "{foe} tosses you a shiny pebble.", mood: "happy" },
-    { message: "{foe} looks genuinely impressed.", mood: "impressed" },
-    { message: "{foe} laughs so hard they snort.", mood: "silly" },
-    { message: "{foe} chants your name.", mood: "happy" },
-    { message: "{foe} gives you a thumbs up.", mood: "happy" },
-    { message: "{foe} looks terrified by your moves.", mood: "confused" },
-    { message: "{foe} pretends to be a dance judge.", mood: "impressed" },
-    { message: "{foe} wipes away a tear.", mood: "impressed" },
-    { message: "{foe} screams for an encore.", mood: "happy" },
-    { message: "{foe} pulls out a tiny fan and fans you.", mood: "happy" },
-    { message: "{foe} wheezes ONE MORE TIME!", mood: "happy" },
-    { message: "{foe} weeps with joy.", mood: "impressed" },
-    { message: "{foe} whispers teach me with awe.", mood: "impressed" },
-    { message: "{foe} faints from sheer awesomeness.", mood: "silly" },
-    { message: "{foe} honks a party horn once, respectfully.", mood: "silly" },
-    { message: "{foe} throws glitter into the air.", mood: "silly" },
-    { message: "{foe} starts dancing with you.", mood: "dancing" },
-    { message: "{foe} starts stomping rhythmically.", mood: "dancing" },
-    { message: "{foe} starts shadow dancing.", mood: "dancing" },
-    { message: "{foe} spins in a circle.", mood: "dancing" },
-    { message: "{foe} starts headbanging.", mood: "dancing" },
-    { message: "{foe} tries to copy your moves.", mood: "dancing" },
-    { message: "{foe} breakdances badly but with heart.", mood: "dancing" },
-    { message: "{foe} grabs your hand for an awkward two-step.", mood: "dancing" },
-    { message: "{foe} moonwalks three inches, triumphantly.", mood: "dancing" },
-    { message: "{foe} does the worm. Approximately.", mood: "dancing" },
-    { message: "{foe} vogues like their life depends on it.", mood: "dancing" },
-    { message: "{foe} flosses. The dance. Not dental.", mood: "dancing" },
-    { message: "{foe} starts a conga line of one.", mood: "dancing" },
-    { message: "{foe} disco-points at the ceiling.", mood: "dancing" },
-    { message: "{foe} does the robot with suspicious fluidity.", mood: "dancing" },
+    { message: "{foe} boos loudly.", playerHype: 0 },
+    { message: "{foe} crosses their arms and watches silently.", playerHype: 0 },
+    { message: "{foe} refuses to acknowledge your performance.", playerHype: 0 },
+    { message: "{foe} looks disappointed in you personally.", playerHype: 0 },
+    { message: "{foe} throws a tomato at you.", playerHype: 0 },
+    { message: "{foe} rates your performance a 7/10.", playerHype: 0 },
+    { message: "{foe} checks their watch pointedly.", playerHype: 0 },
+    { message: "{foe} yawns mid-dance.", playerHype: 0 },
+    { message: "{foe} holds up a little sign that says 2/10.", playerHype: 0 },
+    { message: "{foe} pretends to take an important phone call.", playerHype: 0 },
+    { message: "{foe} slowly backs away from the dance floor.", playerHype: 0 },
+    { message: "{foe} eats a sandwich, unimpressed.", playerHype: 0 },
+    { message: "{foe} claps once, then stops forever.", playerHype: 0 },
+    { message: "{foe} puts on sunglasses and stares at the ceiling.", playerHype: 0 },
+    { message: "{foe} whispers they've seen better at a funeral.", playerHype: 0 },
+    { message: "{foe} claps politely." },
+    { message: "{foe} looks confused but supportive." },
+    { message: "{foe} tosses you a shiny pebble." },
+    { message: "{foe} looks genuinely impressed." },
+    { message: "{foe} laughs so hard they snort." },
+    { message: "{foe} chants your name." },
+    { message: "{foe} gives you a thumbs up." },
+    { message: "{foe} looks terrified by your moves." },
+    { message: "{foe} pretends to be a dance judge." },
+    { message: "{foe} wipes away a tear." },
+    { message: "{foe} screams for an encore." },
+    { message: "{foe} pulls out a tiny fan and fans you." },
+    { message: "{foe} wheezes ONE MORE TIME!" },
+    { message: "{foe} weeps with joy." },
+    { message: "{foe} whispers teach me with awe." },
+    { message: "{foe} faints from sheer awesomeness." },
+    { message: "{foe} honks a party horn once, respectfully." },
+    { message: "{foe} throws glitter into the air." },
+    { message: "{foe} starts dancing with you.", foeJoins: true },
+    { message: "{foe} starts stomping rhythmically.", foeJoins: true },
+    { message: "{foe} starts shadow dancing.", foeJoins: true },
+    { message: "{foe} spins in a circle.", foeJoins: true },
+    { message: "{foe} starts headbanging.", foeJoins: true },
+    { message: "{foe} tries to copy your moves.", foeJoins: true },
+    { message: "{foe} breakdances badly but with heart.", foeJoins: true },
+    { message: "{foe} grabs your hand for an awkward two-step.", foeJoins: true },
+    { message: "{foe} moonwalks three inches, triumphantly.", foeJoins: true },
+    { message: "{foe} does the worm. Approximately.", foeJoins: true },
+    { message: "{foe} vogues like their life depends on it.", foeJoins: true },
+    { message: "{foe} flosses. The dance. Not dental.", foeJoins: true },
+    { message: "{foe} starts a conga line of one.", foeJoins: true },
+    { message: "{foe} disco-points at the ceiling.", foeJoins: true },
+    { message: "{foe} does the robot with suspicious fluidity.", foeJoins: true },
 ];
 const player = {
     name: "Hero",
@@ -142,8 +155,10 @@ let pendingHeroEmoji = DEFAULT_HERO_EMOJI;
 let pendingHeroLabel = DEFAULT_HERO_LABEL;
 let foeColorTheme = "amber";
 let lastFoeColorTheme = null;
+let defeatVerbIndex = 0;
 const el = {
     arena: document.getElementById("arena"),
+    battleStage: document.getElementById("battle-stage"),
     playerPanel: document.getElementById("player-panel"),
     foePanel: document.getElementById("foe-panel"),
     damageLayer: document.getElementById("damage-layer"),
@@ -160,7 +175,6 @@ const el = {
     foeAttack: document.getElementById("foe-attack"),
     foeBuff: document.getElementById("foe-buff"),
     foeEmoji: document.getElementById("foe-emoji"),
-    foeMoodBadge: document.getElementById("foe-mood-badge"),
     foeHpFill: document.getElementById("foe-hp-fill"),
     foeHpText: document.getElementById("foe-hp-text"),
     turnLabel: document.getElementById("turn-label"),
@@ -381,11 +395,10 @@ function resolveSavedHeroName(save, emoji) {
     return save.heroName ?? save.heroLabel ?? getHeroLabelForEmoji(emoji);
 }
 function readHeroNameFromSetup() {
-    const typed = normalizeHeroName(el.heroNameInput.value);
-    if (typed.length > 0) {
-        return typed;
-    }
-    return getHeroLabelForEmoji(pendingHeroEmoji);
+    return normalizeHeroName(el.heroNameInput.value);
+}
+function updateSetupStartButton() {
+    el.setupStartBtn.disabled = readHeroNameFromSetup().length === 0;
 }
 function getPlayerHypeBonus() {
     return hypeLevel * HYPE_ATTACK_PER_LEVEL;
@@ -406,9 +419,6 @@ function getPlayerHypeGain(response) {
 }
 function applyPlayerDanceBuff(amount = 1) {
     hypeLevel += amount;
-}
-function foeDancesBack(mood) {
-    return mood === "dancing";
 }
 function applyFoeDanceBuff() {
     foeHypeLevel += 1;
@@ -435,18 +445,49 @@ function setHpBar(fill, current, max) {
     const pct = max > 0 ? Math.max(0, Math.min(100, (current / max) * 100)) : 0;
     fill.style.width = `${pct}%`;
 }
-function setFoeMood(mood) {
-    if (!foe)
-        return;
-    const badge = FOE_MOOD_EMOJI[mood];
-    el.foeMoodBadge.textContent = badge;
-    el.foeMoodBadge.classList.toggle("hidden", !badge);
-    el.foeEmoji.textContent = foe.emoji;
-    el.foeEmoji.setAttribute("aria-label", `${foe.name} (${mood})`);
-}
 function briefClass(element, className, ms) {
+    element.classList.remove(className);
+    void element.offsetWidth;
     element.classList.add(className);
     window.setTimeout(() => element.classList.remove(className), ms);
+}
+function playStageClass(className, ms) {
+    return new Promise((resolve) => {
+        el.battleStage.classList.remove(className);
+        void el.battleStage.offsetWidth;
+        el.battleStage.classList.add(className);
+        window.setTimeout(() => {
+            el.battleStage.classList.remove(className);
+            resolve();
+        }, ms);
+    });
+}
+function clearCombatAnimations() {
+    el.playerPanel.classList.remove("hero-death", "hero-death-knockback", "hero-knockback", "hero-victory-wobble");
+    el.foePanel.classList.remove("foe-poof", "foe-enter", "foe-knockback");
+    el.battleStage.classList.remove("stage-death-vignette", "stage-flash-gold");
+}
+function playFoeEntrance() {
+    briefClass(el.foePanel, "foe-enter", FOE_ENTRANCE_MS);
+}
+function playFoePoof() {
+    briefClass(el.foePanel, "foe-poof", FOE_POOF_MS);
+    return pause(FOE_POOF_MS);
+}
+async function playFoeDefeat(isFinal) {
+    if (isFinal) {
+        await Promise.all([playFoePoof(), playStageClass("stage-flash-gold", GOLD_FLASH_MS)]);
+        briefClass(el.playerPanel, "hero-victory-wobble", 450);
+        await pause(350);
+        return;
+    }
+    await playFoePoof();
+}
+async function handlePlayerDeath() {
+    await pause(420);
+    el.playerPanel.classList.add("hero-death");
+    await playStageClass("stage-death-vignette", DEATH_BEAT_MS);
+    endGame();
 }
 function showDamagePop(side, text, kind) {
     const pop = document.createElement("span");
@@ -486,6 +527,7 @@ function render() {
         el.foeBuff.textContent = formatHypeLabel(foeHypeLevel);
         el.foeBuff.classList.toggle("hidden", foeHypeLevel === 0);
         el.foeEmoji.textContent = foe.emoji;
+        el.foeEmoji.setAttribute("aria-label", foe.name);
         setHpBar(el.foeHpFill, foe.hp, foe.maxHp);
         el.foeHpText.textContent = `${foe.hp}/${foe.maxHp}`;
         const foeHpBar = el.foePanel.querySelector(".hp-bar");
@@ -502,9 +544,43 @@ function render() {
         btn.disabled = actionsLocked || inEndScreen;
     }
 }
+function escapeHtml(text) {
+    return text
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+}
 function logLine(text, kind = "info") {
     el.battleText.textContent = text;
     el.battleText.className = `battle-text battle-${kind}`;
+    revealBattleLog();
+}
+function logBattleLines(primary, secondary) {
+    el.battleText.className = "battle-text";
+    el.battleText.innerHTML = [
+        `<span class="battle-line battle-${primary.kind}">${escapeHtml(primary.text)}</span>`,
+        `<span class="battle-line battle-${secondary.kind}">${escapeHtml(secondary.text)}</span>`,
+    ].join("");
+    revealBattleLog();
+}
+function revealBattleLog() {
+    el.battleText.closest(".dialog-box")?.scrollIntoView({ block: "nearest", behavior: "smooth" });
+}
+function pause(ms) {
+    return new Promise((resolve) => window.setTimeout(resolve, ms));
+}
+function logWaveTransition(previousName, transition, nextName) {
+    const actionClass = transition === "flee" ? "battle-player" : "battle-win";
+    const actionLine = transition === "flee"
+        ? `You run away from ${escapeHtml(previousName)},`
+        : `You ${escapeHtml(nextDefeatVerb())} ${escapeHtml(previousName)},`;
+    el.battleText.className = "battle-text";
+    el.battleText.innerHTML = [
+        `<span class="battle-line ${actionClass}">${actionLine}</span>`,
+        `<span class="battle-line battle-pause">but then...</span>`,
+        `<span class="battle-line battle-foe">${escapeHtml(nextName)} appears!</span>`,
+    ].join("");
 }
 function clearLog() {
     logLine("What will you do?", "info");
@@ -532,14 +608,24 @@ function randomDamage(max) {
 function randomDanceResponse() {
     return danceResponses[Math.floor(Math.random() * danceResponses.length)];
 }
-function startWave() {
+function nextDefeatVerb() {
+    const verb = DEFEAT_VERBS[defeatVerbIndex % DEFEAT_VERBS.length];
+    defeatVerbIndex += 1;
+    return verb;
+}
+function startWave(options) {
     pickNextFoeColor();
     foe = makeFoeForWave(wave);
     foeHypeLevel = 0;
-    setFoeMood("default");
     pulseWaveHud();
-    logLine(`${foe.name} appears!`, "foe");
+    if (options?.previousFoeName && options.transition) {
+        logWaveTransition(options.previousFoeName, options.transition, foe.name);
+    }
+    else {
+        logLine(`${foe.name} appears!`, "foe");
+    }
     render();
+    playFoeEntrance();
     persist();
 }
 function updateRecordsOnGameOver() {
@@ -571,7 +657,6 @@ function updateRecordsOnVictory() {
 function endGame() {
     phase = "gameover";
     clearAllHype();
-    setFoeMood("disappointed");
     logLine("You lose! Game over.", "lose");
     updateRecordsOnGameOver();
     persist();
@@ -580,39 +665,47 @@ function endGame() {
 function winCampaign() {
     phase = "victory";
     clearAllHype();
-    setFoeMood("happy");
     logLine(`Wave ${CAMPAIGN_WAVES} cleared! Total victory!`, "win");
     updateRecordsOnVictory();
     persist();
     render();
 }
 function winWave() {
-    logLine("You win this wave!", "win");
+    if (!foe)
+        return;
+    const defeatedFoe = foe.name;
     if (wave >= getCampaignLength()) {
         winCampaign();
         return;
     }
     wave += 1;
     turn = 1;
-    startWave();
+    startWave({ previousFoeName: defeatedFoe, transition: "defeat" });
 }
-function foeCounterAttack() {
+function playHitKnockback(victim, fatal = false) {
+    const panel = victim === "hero" ? el.playerPanel : el.foePanel;
+    let knockClass;
+    if (victim === "hero") {
+        knockClass = fatal ? "hero-death-knockback" : "hero-knockback";
+    }
+    else {
+        knockClass = fatal ? "foe-knockback-kill" : "foe-knockback";
+    }
+    briefClass(panel, knockClass, fatal ? 450 : 400);
+}
+function resolveFoeCounterAttack() {
     if (!foe || foe.hp <= 0)
-        return;
+        return null;
     const hit = randomDamage(getEffectiveFoeAttack());
     player.hp = Math.max(0, player.hp - hit);
-    setFoeMood("angry");
+    const died = player.hp <= 0;
     showDamagePop("hero", `-${hit}`, "damage");
-    logLine(`${foe.name} hits you for ${hit} damage.`, "foe");
-    logLine(`Player HP: ${player.hp}`, "info");
+    playHitKnockback("hero", died);
     if (player.hp <= 0) {
-        endGame();
-        return;
+        return hit;
     }
     turn += 1;
-    setFoeMood("default");
-    render();
-    persist();
+    return hit;
 }
 async function withActionLock(fn) {
     if (actionsLocked || phase === "gameover" || phase === "victory")
@@ -627,31 +720,55 @@ async function withActionLock(fn) {
         render();
     }
 }
-function onAttack() {
+async function onAttack() {
     if (!foe)
         return;
     const hit = randomDamage(getEffectiveAttack());
     foe.hp = Math.max(0, foe.hp - hit);
-    setFoeMood(foe.hp <= foe.maxHp / 2 ? "angry" : "default");
-    briefClass(el.foePanel, "foe-shake", 350);
+    const foeKilled = foe.hp <= 0;
     showDamagePop("foe", `-${hit}`, "damage");
+    playHitKnockback("foe", foeKilled);
     logLine(`You hit ${foe.name} for ${hit} damage.`, "player");
-    logLine(`${foe.name} HP: ${foe.hp}`, "info");
     render();
-    if (foe.hp <= 0) {
-        winWave();
+    if (foeKilled) {
+        await pause(KILL_KNOCKBACK_SETTLE_MS);
+        const isFinal = wave >= getCampaignLength();
+        await playFoeDefeat(isFinal);
+        if (isFinal) {
+            winCampaign();
+        }
+        else {
+            winWave();
+        }
         return;
     }
-    foeCounterAttack();
+    await pause(COUNTER_ATTACK_DELAY_MS);
+    const counterHit = resolveFoeCounterAttack();
+    if (counterHit === null)
+        return;
+    logBattleLines({ text: `You hit ${foe.name} for ${hit} damage.`, kind: "player" }, { text: `${foe.name} hits you for ${counterHit} damage.`, kind: "foe" });
+    render();
+    persist();
+    if (player.hp <= 0) {
+        await handlePlayerDeath();
+    }
 }
-function onHeal() {
+async function onHeal() {
     const heal = 3;
     player.hp = Math.min(player.maxHp, player.hp + heal);
     showDamagePop("hero", `+${heal}`, "heal");
-    logLine(`You heal for ${heal} HP.`, "player");
-    logLine(`Player HP: ${player.hp}/${player.maxHp}`, "info");
+    logLine(`You healed yourself for ${heal} HP.`, "player");
     render();
-    foeCounterAttack();
+    await pause(COUNTER_ATTACK_DELAY_MS);
+    const counterHit = resolveFoeCounterAttack();
+    if (counterHit === null)
+        return;
+    logLine(`${foe.name} hits you for ${counterHit} damage.`, "foe");
+    render();
+    persist();
+    if (player.hp <= 0) {
+        await handlePlayerDeath();
+    }
 }
 function formatDanceHypeMessage(response, playerGain, foeJoins) {
     const line = formatFoeInText(response.message);
@@ -666,7 +783,7 @@ function formatDanceHypeMessage(response, playerGain, foeJoins) {
 function onDance() {
     const response = randomDanceResponse();
     const playerGain = getPlayerHypeGain(response);
-    const joins = foeDancesBack(response.mood);
+    const joins = response.foeJoins === true;
     if (playerGain > 0) {
         applyPlayerDanceBuff(playerGain);
     }
@@ -679,15 +796,17 @@ function onDance() {
     persist();
 }
 function onRun() {
+    if (!foe)
+        return;
     if (wave >= getCampaignLength()) {
         logLine("No fleeing the final foe!", "info");
         return;
     }
     clearAllHype();
-    logLine("You fled! Your hype fades...", "player");
+    const fledFoe = foe.name;
     wave += 1;
     turn = 1;
-    startWave();
+    startWave({ previousFoeName: fledFoe, transition: "flee" });
 }
 function applyHeroChoice(emoji, label) {
     player.emoji = emoji;
@@ -709,17 +828,12 @@ function buildHeroPicker() {
             btn.classList.add("selected");
         }
         btn.addEventListener("click", () => {
-            const previousDefault = getHeroLabelForEmoji(pendingHeroEmoji);
-            const currentName = normalizeHeroName(el.heroNameInput.value);
             for (const other of el.heroPicker.querySelectorAll(".emoji-pick")) {
                 other.classList.remove("selected");
             }
             btn.classList.add("selected");
             pendingHeroEmoji = hero.emoji;
             pendingHeroLabel = hero.label;
-            if (!currentName || currentName === previousDefault) {
-                el.heroNameInput.value = hero.label;
-            }
         });
         el.heroPicker.appendChild(btn);
     }
@@ -729,7 +843,8 @@ function showSetup() {
     pendingHeroEmoji = save.playerEmoji ?? player.emoji;
     pendingHeroLabel = getHeroLabelForEmoji(pendingHeroEmoji);
     buildHeroPicker();
-    el.heroNameInput.value = resolveSavedHeroName(save, pendingHeroEmoji);
+    el.heroNameInput.value = save.heroName ?? "";
+    updateSetupStartButton();
     el.setupOverlay.classList.remove("hidden");
     el.gameShell.classList.add("setup-active");
 }
@@ -739,22 +854,29 @@ function hideSetup() {
 }
 function confirmHeroAndStart() {
     const heroName = readHeroNameFromSetup();
-    el.heroNameInput.value = heroName;
+    if (!heroName) {
+        el.heroNameInput.focus();
+        updateSetupStartButton();
+        return false;
+    }
     applyHeroChoice(pendingHeroEmoji, heroName);
     hideSetup();
     persistStatsOnly();
     if (foe) {
         resetGame();
     }
+    return true;
 }
 function resetGame() {
     player.hp = player.maxHp;
     turn = 1;
     wave = 1;
+    defeatVerbIndex = 0;
     foeOrder = buildFoeOrder(player.emoji);
     clearAllHype();
     lastFoeColorTheme = null;
     phase = "combat";
+    clearCombatAnimations();
     el.gameOver.classList.add("hidden");
     clearLog();
     logLine("A new adventure begins.", "info");
@@ -812,13 +934,13 @@ function bindActions() {
         if (!target)
             return;
         const action = target.dataset.action;
-        void withActionLock(() => {
+        void withActionLock(async () => {
             switch (action) {
                 case "attack":
-                    onAttack();
+                    await onAttack();
                     break;
                 case "heal":
-                    onHeal();
+                    await onHeal();
                     break;
                 case "dance":
                     onDance();
@@ -841,8 +963,11 @@ function bindActions() {
     el.resetStatsBtn.addEventListener("click", () => {
         void resetStats();
     });
+    el.heroNameInput.addEventListener("input", updateSetupStartButton);
     el.setupStartBtn.addEventListener("click", () => {
-        confirmHeroAndStart();
+        if (!confirmHeroAndStart()) {
+            return;
+        }
         if (!foe) {
             beginGame();
         }
@@ -862,7 +987,6 @@ function beginGame() {
         applySnapshot(snapshot);
         clearLog();
         logLine("Welcome back — your run was restored.", "info");
-        setFoeMood("default");
         render();
         persist();
         return;

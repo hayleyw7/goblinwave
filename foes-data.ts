@@ -1,8 +1,8 @@
-/** 115 hand-picked foes — critters + fantasy creatures, sound-matched alliteration. */
+/** 114 hand-picked foes — critters + fantasy creatures, sound-matched alliteration. */
 export const FOES = [
   {
     "id": "cunning-cat",
-    "name": "Cunning Cat",
+    "name": "Cowardly Cat",
     "emoji": "🐱",
     "baseHp": 10,
     "baseAtk": 3
@@ -16,7 +16,7 @@ export const FOES = [
   },
   {
     "id": "pompous-poodle",
-    "name": "Pompous Poodle",
+    "name": "Peevish Poodle",
     "emoji": "🐩",
     "baseHp": 11,
     "baseAtk": 3
@@ -58,14 +58,14 @@ export const FOES = [
   },
   {
     "id": "obnoxious-orangutan",
-    "name": "Obnoxious Orangutan",
+    "name": "Obnoxious Orang",
     "emoji": "🦧",
     "baseHp": 12,
     "baseAtk": 3
   },
   {
     "id": "loathsome-lion",
-    "name": "Loathsome Lion",
+    "name": "Lousy Lion",
     "emoji": "🦁",
     "baseHp": 13,
     "baseAtk": 4
@@ -93,21 +93,21 @@ export const FOES = [
   },
   {
     "id": "moody-moose",
-    "name": "Moody Moose",
+    "name": "Morose Moose",
     "emoji": "🫎",
     "baseHp": 13,
     "baseAtk": 3
   },
   {
     "id": "unhinged-unicorn",
-    "name": "Unhinged Unicorn",
+    "name": "Useless Uni",
     "emoji": "🦄",
     "baseHp": 12,
     "baseAtk": 3
   },
   {
     "id": "zealous-zebra",
-    "name": "Zealous Zebra",
+    "name": "Zapped Zebra",
     "emoji": "🦓",
     "baseHp": 12,
     "baseAtk": 3
@@ -121,7 +121,7 @@ export const FOES = [
   },
   {
     "id": "bold-bison",
-    "name": "Bold Bison",
+    "name": "Boorish Bison",
     "emoji": "🦬",
     "baseHp": 14,
     "baseAtk": 4
@@ -135,14 +135,14 @@ export const FOES = [
   },
   {
     "id": "obnoxious-ox",
-    "name": "Obnoxious Ox",
+    "name": "Obstinate Ox",
     "emoji": "🐂",
     "baseHp": 14,
     "baseAtk": 4
   },
   {
     "id": "burly-buffalo",
-    "name": "Burly Buffalo",
+    "name": "Beastly Buffalo",
     "emoji": "🐃",
     "baseHp": 14,
     "baseAtk": 4
@@ -156,7 +156,7 @@ export const FOES = [
   },
   {
     "id": "beastly-boar",
-    "name": "Beastly Boar",
+    "name": "Barren Boar",
     "emoji": "🐗",
     "baseHp": 12,
     "baseAtk": 4
@@ -170,49 +170,49 @@ export const FOES = [
   },
   {
     "id": "shaggy-sheep",
-    "name": "Shaggy Sheep",
+    "name": "Shoddy Sheep",
     "emoji": "🐑",
     "baseHp": 10,
     "baseAtk": 3
   },
   {
     "id": "goofy-goat",
-    "name": "Goofy Goat",
+    "name": "Guilty Goat",
     "emoji": "🐐",
     "baseHp": 11,
     "baseAtk": 3
   },
   {
     "id": "callous-camel",
-    "name": "Callous Camel",
+    "name": "Coy Camel",
     "emoji": "🐫",
     "baseHp": 12,
     "baseAtk": 3
   },
   {
     "id": "loathsome-llama",
-    "name": "Loathsome Llama",
+    "name": "Leery Llama",
     "emoji": "🦙",
     "baseHp": 11,
     "baseAtk": 3
   },
   {
     "id": "giant-giraffe",
-    "name": "Giant Giraffe",
+    "name": "Gaunt Giraffe",
     "emoji": "🦒",
     "baseHp": 13,
     "baseAtk": 3
   },
   {
     "id": "evil-elephant",
-    "name": "Evil Elephant",
+    "name": "Empty Elephant",
     "emoji": "🐘",
     "baseHp": 14,
     "baseAtk": 4
   },
   {
     "id": "mad-mammoth",
-    "name": "Mad Mammoth",
+    "name": "Mutant Mammoth",
     "emoji": "🦣",
     "baseHp": 14,
     "baseAtk": 4
@@ -226,7 +226,7 @@ export const FOES = [
   },
   {
     "id": "hostile-hippo",
-    "name": "Hostile Hippo",
+    "name": "Hateful Hippo",
     "emoji": "🦛",
     "baseHp": 14,
     "baseAtk": 4
@@ -247,98 +247,98 @@ export const FOES = [
   },
   {
     "id": "horrible-hamster",
-    "name": "Horrible Hamster",
+    "name": "Horrible Hammy",
     "emoji": "🐹",
     "baseHp": 9,
     "baseAtk": 3
   },
   {
     "id": "rabid-rabbit",
-    "name": "Rabid Rabbit",
+    "name": "Rancid Rabbit",
     "emoji": "🐰",
     "baseHp": 10,
     "baseAtk": 3
   },
   {
     "id": "cheeky-chipmunk",
-    "name": "Cheeky Chipmunk",
+    "name": "Churlish Chip",
     "emoji": "🐿️",
     "baseHp": 10,
     "baseAtk": 3
   },
   {
     "id": "bumbling-beaver",
-    "name": "Bumbling Beaver",
+    "name": "Belligerent Beav",
     "emoji": "🦫",
     "baseHp": 11,
     "baseAtk": 3
   },
   {
     "id": "horrible-hedgehog",
-    "name": "Horrible Hedgehog",
+    "name": "Heinous Hog",
     "emoji": "🦔",
     "baseHp": 10,
     "baseAtk": 3
   },
   {
     "id": "beastly-bat",
-    "name": "Beastly Bat",
+    "name": "Berserk Bat",
     "emoji": "🦇",
     "baseHp": 10,
     "baseAtk": 4
   },
   {
     "id": "burly-bear",
-    "name": "Burly Bear",
+    "name": "Baleful Bear",
     "emoji": "🐻",
     "baseHp": 13,
     "baseAtk": 4
   },
   {
     "id": "kooky-koala",
-    "name": "Kooky Koala",
+    "name": "Knavish Koala",
     "emoji": "🐨",
     "baseHp": 11,
     "baseAtk": 3
   },
   {
     "id": "petty-panda",
-    "name": "Petty Panda",
+    "name": "Puny Panda",
     "emoji": "🐼",
     "baseHp": 12,
     "baseAtk": 3
   },
   {
     "id": "slothful-sloth",
-    "name": "Sleepy Sloth",
+    "name": "Sluggish Sloth",
     "emoji": "🦥",
     "baseHp": 10,
     "baseAtk": 2
   },
   {
     "id": "odious-otter",
-    "name": "Odious Otter",
+    "name": "Ornery Otter",
     "emoji": "🦦",
     "baseHp": 11,
     "baseAtk": 3
   },
   {
     "id": "skittish-skunk",
-    "name": "Skittish Skunk",
+    "name": "Skulking Skunk",
     "emoji": "🦨",
     "baseHp": 10,
     "baseAtk": 3
   },
   {
     "id": "kooky-kangaroo",
-    "name": "Kooky Kangaroo",
+    "name": "Killer Kang",
     "emoji": "🦘",
     "baseHp": 12,
     "baseAtk": 4
   },
   {
     "id": "bad-badger",
-    "name": "Bad Badger",
+    "name": "Baneful Badger",
     "emoji": "🦡",
     "baseHp": 11,
     "baseAtk": 4
@@ -352,21 +352,21 @@ export const FOES = [
   },
   {
     "id": "cheeky-chicken",
-    "name": "Cheeky Chicken",
+    "name": "Chaotic Chicken",
     "emoji": "🐔",
     "baseHp": 10,
     "baseAtk": 3
   },
   {
     "id": "rowdy-rooster",
-    "name": "Rowdy Rooster",
+    "name": "Rotten Rooster",
     "emoji": "🐓",
     "baseHp": 11,
     "baseAtk": 4
   },
   {
     "id": "chirpy-chick",
-    "name": "Chirpy Chick",
+    "name": "Cheerless Chick",
     "emoji": "🐥",
     "baseHp": 9,
     "baseAtk": 2
@@ -380,21 +380,21 @@ export const FOES = [
   },
   {
     "id": "petty-penguin",
-    "name": "Petty Penguin",
+    "name": "Pasty Penguin",
     "emoji": "🐧",
     "baseHp": 11,
     "baseAtk": 3
   },
   {
     "id": "devious-dove",
-    "name": "Devious Dove",
+    "name": "Dour Dove",
     "emoji": "🕊️",
     "baseHp": 10,
     "baseAtk": 3
   },
   {
     "id": "evil-eagle",
-    "name": "Evil Eagle",
+    "name": "Eerie Eagle",
     "emoji": "🦅",
     "baseHp": 12,
     "baseAtk": 4
@@ -408,14 +408,14 @@ export const FOES = [
   },
   {
     "id": "swanky-swan",
-    "name": "Swanky Swan",
+    "name": "Swollen Swan",
     "emoji": "🦢",
     "baseHp": 11,
     "baseAtk": 3
   },
   {
     "id": "odious-owl",
-    "name": "Odious Owl",
+    "name": "Owly Owl",
     "emoji": "🦉",
     "baseHp": 11,
     "baseAtk": 4
@@ -429,91 +429,91 @@ export const FOES = [
   },
   {
     "id": "flamboyant-flamingo",
-    "name": "Flamboyant Flamingo",
+    "name": "Flabby Flamingo",
     "emoji": "🦩",
     "baseHp": 11,
     "baseAtk": 3
   },
   {
     "id": "posh-peacock",
-    "name": "Posh Peacock",
+    "name": "Pestilent Peacock",
     "emoji": "🦚",
     "baseHp": 11,
     "baseAtk": 3
   },
   {
     "id": "petulant-parrot",
-    "name": "Petulant Parrot",
+    "name": "Petulant Polly",
     "emoji": "🦜",
     "baseHp": 10,
     "baseAtk": 3
   },
   {
     "id": "cruel-crow",
-    "name": "Cruel Crow",
+    "name": "Craven Crow",
     "emoji": "🐦‍⬛",
     "baseHp": 10,
     "baseAtk": 3
   },
   {
     "id": "goofy-goose",
-    "name": "Goofy Goose",
+    "name": "Gaudy Goose",
     "emoji": "🪿",
     "baseHp": 11,
     "baseAtk": 3
   },
   {
     "id": "freaky-frog",
-    "name": "Freaky Frog",
+    "name": "Frowzy Frog",
     "emoji": "🐸",
     "baseHp": 10,
     "baseAtk": 3
   },
   {
     "id": "cruel-crocodile",
-    "name": "Cruel Crocodile",
+    "name": "Cruel Croc",
     "emoji": "🐊",
     "baseHp": 13,
     "baseAtk": 4
   },
   {
     "id": "terrible-turtle",
-    "name": "Terrible Turtle",
+    "name": "Torrid Turtle",
     "emoji": "🐢",
     "baseHp": 12,
     "baseAtk": 3
   },
   {
     "id": "loathsome-lizard",
-    "name": "Loathsome Lizard",
+    "name": "Lurid Liz",
     "emoji": "🦎",
     "baseHp": 10,
     "baseAtk": 3
   },
   {
     "id": "sneaky-snake",
-    "name": "Sneaky Snake",
+    "name": "Snide Snake",
     "emoji": "🐍",
     "baseHp": 11,
     "baseAtk": 4
   },
   {
     "id": "dreadful-dragon",
-    "name": "Dreadful Dragon",
+    "name": "Dreadful Drake",
     "emoji": "🐉",
     "baseHp": 14,
     "baseAtk": 4
   },
   {
     "id": "brutal-brontosaurus",
-    "name": "Brutal Brontosaurus",
+    "name": "Brutal Bronto",
     "emoji": "🦕",
     "baseHp": 14,
     "baseAtk": 4
   },
   {
     "id": "terrible-trex",
-    "name": "Terrible T-Rex",
+    "name": "Toxic T-Rex",
     "emoji": "🦖",
     "baseHp": 14,
     "baseAtk": 5
@@ -527,14 +527,14 @@ export const FOES = [
   },
   {
     "id": "devious-dolphin",
-    "name": "Devious Dolphin",
+    "name": "Deranged Dolphin",
     "emoji": "🐬",
     "baseHp": 12,
     "baseAtk": 3
   },
   {
     "id": "savage-seal",
-    "name": "Savage Seal",
+    "name": "Sullen Seal",
     "emoji": "🦭",
     "baseHp": 11,
     "baseAtk": 3
@@ -548,42 +548,42 @@ export const FOES = [
   },
   {
     "id": "bloated-blowfish",
-    "name": "Bloated Blowfish",
+    "name": "Bloated Blob",
     "emoji": "🐡",
     "baseHp": 10,
     "baseAtk": 3
   },
   {
     "id": "shocking-shark",
-    "name": "Shocking Shark",
+    "name": "Shifty Shark",
     "emoji": "🦈",
     "baseHp": 13,
     "baseAtk": 4
   },
   {
     "id": "obnoxious-octopus",
-    "name": "Obnoxious Octopus",
+    "name": "Oppressive Octo",
     "emoji": "🐙",
     "baseHp": 12,
     "baseAtk": 3
   },
   {
     "id": "jaded-jellyfish",
-    "name": "Jaded Jellyfish",
+    "name": "Jaded Jelly",
     "emoji": "🪼",
     "baseHp": 10,
     "baseAtk": 3
   },
   {
     "id": "crabby-crab",
-    "name": "Crabby Crab",
+    "name": "Crazed Crab",
     "emoji": "🦀",
     "baseHp": 11,
     "baseAtk": 3
   },
   {
     "id": "loathsome-lobster",
-    "name": "Loathsome Lobster",
+    "name": "Limp Lob",
     "emoji": "🦞",
     "baseHp": 12,
     "baseAtk": 4
@@ -597,28 +597,28 @@ export const FOES = [
   },
   {
     "id": "squishy-squid",
-    "name": "Squishy Squid",
+    "name": "Squalid Squid",
     "emoji": "🦑",
     "baseHp": 12,
     "baseAtk": 3
   },
   {
     "id": "odious-oyster",
-    "name": "Odious Oyster",
+    "name": "Oily Oyster",
     "emoji": "🦪",
     "baseHp": 10,
     "baseAtk": 2
   },
   {
     "id": "sneaky-snail",
-    "name": "Sneaky Snail",
+    "name": "Snotty Snail",
     "emoji": "🐌",
     "baseHp": 9,
     "baseAtk": 2
   },
   {
     "id": "batty-butterfly",
-    "name": "Batty Butterfly",
+    "name": "Batty Butter",
     "emoji": "🦋",
     "baseHp": 9,
     "baseAtk": 3
@@ -639,21 +639,21 @@ export const FOES = [
   },
   {
     "id": "beastly-bee",
-    "name": "Beastly Bee",
+    "name": "Bullying Bee",
     "emoji": "🐝",
     "baseHp": 9,
     "baseAtk": 4
   },
   {
     "id": "biting-beetle",
-    "name": "Biting Beetle",
+    "name": "Barbed Beetle",
     "emoji": "🪲",
     "baseHp": 10,
     "baseAtk": 3
   },
   {
     "id": "loathsome-ladybug",
-    "name": "Loathsome Ladybug",
+    "name": "Lazy Lady",
     "emoji": "🐞",
     "baseHp": 9,
     "baseAtk": 3
@@ -667,7 +667,7 @@ export const FOES = [
   },
   {
     "id": "cursed-cockroach",
-    "name": "Cursed Cockroach",
+    "name": "Cursed Cootie",
     "emoji": "🪳",
     "baseHp": 10,
     "baseAtk": 3
@@ -688,21 +688,21 @@ export const FOES = [
   },
   {
     "id": "malicious-mosquito",
-    "name": "Malicious Mosquito",
+    "name": "Mangy Mozzie",
     "emoji": "🦟",
     "baseHp": 9,
     "baseAtk": 3
   },
   {
     "id": "flimsy-fly",
-    "name": "Flimsy Fly",
+    "name": "Flagrant Fly",
     "emoji": "🪰",
     "baseHp": 9,
     "baseAtk": 3
   },
   {
     "id": "wicked-worm",
-    "name": "Wicked Worm",
+    "name": "Wimpy Worm",
     "emoji": "🪱",
     "baseHp": 9,
     "baseAtk": 2
@@ -716,35 +716,35 @@ export const FOES = [
   },
   {
     "id": "pesky-phoenix",
-    "name": "Pesky Phoenix",
+    "name": "Phony Phoenix",
     "emoji": "🐦‍🔥",
     "baseHp": 13,
     "baseAtk": 4
   },
   {
     "id": "skulking-skeleton",
-    "name": "Skulking Skeleton",
+    "name": "Skanky Skelly",
     "emoji": "💀",
     "baseHp": 10,
     "baseAtk": 3
   },
   {
     "id": "ghastly-goblin",
-    "name": "Ghastly Goblin",
+    "name": "Ghoul Goblin",
     "emoji": "👺",
     "baseHp": 11,
     "baseAtk": 4
   },
   {
     "id": "odious-ogre",
-    "name": "Odious Ogre",
+    "name": "Obtuse Ogre",
     "emoji": "👹",
     "baseHp": 13,
     "baseAtk": 4
   },
   {
     "id": "devious-devil",
-    "name": "Devious Devil",
+    "name": "Diabolic Devil",
     "emoji": "😈",
     "baseHp": 12,
     "baseAtk": 4
@@ -764,13 +764,6 @@ export const FOES = [
     "baseAtk": 3
   },
   {
-    "id": "malicious-monster",
-    "name": "Malicious Monster",
-    "emoji": "👾",
-    "baseHp": 11,
-    "baseAtk": 4
-  },
-  {
     "id": "vile-vampire",
     "name": "Vile Vampire",
     "emoji": "🧛",
@@ -779,21 +772,21 @@ export const FOES = [
   },
   {
     "id": "zealous-zombie",
-    "name": "Zealous Zombie",
+    "name": "Zonked Zombie",
     "emoji": "🧟",
     "baseHp": 12,
     "baseAtk": 3
   },
   {
     "id": "gnarly-genie",
-    "name": "Gnarly Genie",
+    "name": "Galling Genie",
     "emoji": "🧞",
     "baseHp": 12,
     "baseAtk": 4
   },
   {
     "id": "moody-mermaid",
-    "name": "Moody Mermaid",
+    "name": "Moody Mer",
     "emoji": "🧜",
     "baseHp": 11,
     "baseAtk": 3
