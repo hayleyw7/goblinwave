@@ -67,6 +67,17 @@ test.describe("Critterwave — happy paths", () => {
     await expect(page.getByText("High Score", { exact: true })).toBeVisible();
   });
 
+  test("compact one-line footer on mobile", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await startFreshRun(page);
+    await expect(page.getByText("Best", { exact: true })).toBeVisible();
+    await expect(page.getByText("Runs", { exact: true })).toBeVisible();
+    await expect(page.getByRole("button", { name: "New Run" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Clear Data" })).toBeVisible();
+    await expect(page.locator(".records-stat-label--long").first()).toBeHidden();
+    await expect(page.locator(".records-stat-label--short").first()).toBeVisible();
+  });
+
   test("new run returns to hero setup", async ({ page }) => {
     await startFreshRun(page);
     await page.getByRole("button", { name: "New Run" }).click();
